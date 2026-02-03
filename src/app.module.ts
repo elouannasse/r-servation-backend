@@ -4,12 +4,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
+import { ReservationsModule } from './reservations/reservations.module';
 
 @Module({
   imports: [
     MongooseModule.forRoot('mongodb://localhost:27017/reservation'),
     AuthModule,
     EventsModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

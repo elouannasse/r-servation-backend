@@ -12,9 +12,6 @@ export class Reservation {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   user: Types.ObjectId;
 
-  @Prop({ type: Number, required: true, min: 1 })
-  numberOfSeats: number;
-
   @Prop({
     type: String,
     enum: ReservationStatus,
@@ -30,3 +27,6 @@ export class Reservation {
 }
 
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);
+
+// Index unique sur (event, user) pour éviter qu'un user réserve 2 fois le même événement
+ReservationSchema.index({ event: 1, user: 1 }, { unique: true });
