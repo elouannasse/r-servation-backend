@@ -10,7 +10,13 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -19,6 +25,7 @@ import { UserRole } from '../enums/user-role.enum';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { multerConfig } from '../config/multer.config';
 
 /**
  * Contrôleur pour la gestion des événements
@@ -81,5 +88,29 @@ export class EventsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.eventsService.remove(id);
+  }
+
+  // POST /events/:id/upload-image - Upload d'image pour un événement (ADMIN seulement)
+  @Post(':id/upload-image')
+  @UseInterceptors(FileInterceptor('image', multerConfig))
+  async uploadImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new Error('Aucun fichier fourni');
+    }
+
+    // Créer l'URL de l'image
+    const imageUrl = `/uploads/events/${file.filename}`;
+
+    // Mettre à jour l'événement avec l'URL de l'image
+    const updatedEvent = await this.eventsService.updateImageUrl(id, imageUrl);
+
+    return {
+      message: 'Image uploadée avec succès',
+      imageUrl,
+      event: updatedEvent,
+    };
   }
 }

@@ -173,4 +173,19 @@ export class EventsService {
       message: 'Event canceled successfully',
     };
   }
+
+  async updateImageUrl(id: string, imageUrl: string) {
+    const event = await this.eventModel.findById(id);
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
+    }
+
+    const updatedEvent = await this.eventModel.findByIdAndUpdate(
+      id,
+      { imageUrl },
+      { new: true },
+    );
+
+    return updatedEvent;
+  }
 }
