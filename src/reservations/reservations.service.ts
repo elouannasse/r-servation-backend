@@ -56,15 +56,10 @@ export class ReservationsService {
       );
     }
 
-    // 3. Vérifie que remainingSeats > 0
-    const confirmedCount = await this.reservationModel.countDocuments({
-      event: eventId,
-      status: ReservationStatus.CONFIRMED,
-    });
-    const remainingSeats = event.capacity - confirmedCount;
-
-    if (remainingSeats <= 0) {
-      throw new BadRequestException('Event full');
+    // 3. Vérifie que des places sont disponibles
+    const isAvailable = await this.checkAvailability(eventId);
+    if (!isAvailable) {
+      throw new BadRequestException('Event is full');
     }
 
     // 4. Vérifie qu'il n'a pas déjà une réservation active (status != CANCELED, REFUSED)
@@ -125,5 +120,22 @@ export class ReservationsService {
     return {
       message: 'Reservation canceled successfully',
     };
+  }
+
+  private async checkAvailability(eventId: string): Promise<boolean> {
+    // 1. Récupère l'événement
+    const event = await this.eventModel.findById(eventId);
+    if (!event) {
+      return false;
+    }
+
+    // 2. Compte les réservations avec status = CONFIRMED
+    const confirmedCount = await this.reservationModel.countDocuments({
+      event: eventId,
+      status: ReservationStatus.CONFIRMED,
+    });
+
+    // 3. Return confirmedCount < event.capacity
+    return confirmedCount < event.capacity;
   }
 }
