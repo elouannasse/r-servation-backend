@@ -17,6 +17,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../enums/user-role.enum';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
+import { UpdateEventDto } from './dto/update-event.dto';
 
 /**
  * Contrôleur pour la gestion des événements
@@ -63,16 +64,12 @@ export class EventsController {
 
   // PUT /events/:id - Modifier un événement (ADMIN seulement)
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: string,
-    @Body() updateEventDto: any,
+    @Body() updateEventDto: UpdateEventDto,
     @CurrentUser() user: any,
   ) {
-    return {
-      message: `Événement ${id} modifié avec succès`,
-      event: updateEventDto,
-      updatedBy: user.email,
-    };
+    return this.eventsService.update(id, updateEventDto);
   }
 
   // DELETE /events/:id - Supprimer un événement (ADMIN seulement)
