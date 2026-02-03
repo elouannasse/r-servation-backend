@@ -45,10 +45,12 @@ export class EventsController {
   async findAllPublic(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('dateFilter') dateFilter?: 'week' | 'month' | 'all',
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    return this.eventsService.findAllPublic(pageNum, limitNum);
+    const filter = dateFilter || 'all';
+    return this.eventsService.findAllPublic(pageNum, limitNum, filter);
   }
   
   // GET /events/admin - Lister TOUS les événements avec pagination (ADMIN seulement)

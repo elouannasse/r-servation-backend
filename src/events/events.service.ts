@@ -50,14 +50,28 @@ export class EventsService {
     };
   }
 
-  async findAllPublic(page: number = 1, limit: number = 10) {
+  async findAllPublic(
+    page: number = 1,
+    limit: number = 10,
+    dateFilter: 'week' | 'month' | 'all' = 'all',
+  ) {
     const skip = (page - 1) * limit;
     const now = new Date();
 
+    // Calculer la date de fin selon le filtre
+    let endDate: Date | undefined;
+    if (dateFilter === 'week') {
+      endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + 7);
+    } else if (dateFilter === 'month') {
+      endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + 30);
+    }
+
     // Filtrer: status = PUBLISHED et date >= aujourd'hui
-    const filter = {
+    const filter: any = {
       status: EventStatus.PUBLISHED,
-      date: { $gte: now },
+      date: endDate ? { $gte: now, $lte: endDate } : { $gte: now },
     };
 
     // Récupérer les événements publiés avec pagination
