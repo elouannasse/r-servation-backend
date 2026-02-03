@@ -2,14 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Event, EventDocument } from '../schemas/event.schema';
+import { Reservation, ReservationDocument } from '../schemas/reservation.schema';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventStatus } from '../enums/event-status.enum';
+import { ReservationStatus } from '../enums/reservation-status.enum';
 
 @Injectable()
 export class EventsService {
   constructor(
     @InjectModel(Event.name) private eventModel: Model<EventDocument>,
+    @InjectModel(Reservation.name) private reservationModel: Model<ReservationDocument>,
   ) {}
 
   async findAll(page: number = 1, limit: number = 10) {
@@ -58,11 +61,15 @@ export class EventsService {
       throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
     }
 
-    // TODO: Calculer les réservations une fois l'entité Reservation créée
-    // Pour l'instant, on retourne des valeurs par défaut
-    const reservationsCount = 0;
-    const confirmedReservations = 0;
-    const remainingSeats = event.capacity - confirmedReservations;
+    // Calculer les places restantes
+    const remainingSeats = await this.calculateRemainingSeats(id);
+    
+    // Compter toutes les réservations et les confirmées
+    const reservationsCount = await this.reservationModel.countDocuments({ event: id });
+    const confirmedReservations = await this.reservationModel.countDocuments({ 
+      event: id, 
+      status: ReservationStatus.CONFIRMED 
+    });
 
     return {
       id: event._id,
@@ -187,5 +194,22 @@ export class EventsService {
     );
 
     return updatedEvent;
+  }
+
+  async calculateRemainingSeats(eventId: string): Promise<number> {
+    // 1. Récupère l'événement
+    const event = await this.eventModel.findById(eventId);
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${eventId} non trouvé`);
+    }
+
+    // 2. Compte les réservations avec status = CONFIRMED
+    const confirmedCount = await this.reservationModel.countDocuments({
+      event: eventId,
+      status: ReservationStatus.CONFIRMED,
+    });
+
+    // 3. Retourne capacity - confirmedCount
+    return event.capacity - confirmedCount;
   }
 }
