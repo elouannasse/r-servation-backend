@@ -50,6 +50,105 @@ export class EventsService {
     };
   }
 
+  async findAllPublic(
+    page: number = 1,
+    limit: number = 10,
+    dateFilter: 'week' | 'month' | 'all' = 'all',
+  ) {
+    const skip = (page - 1) * limit;
+    const now = new Date();
+
+    // Calculer la date de fin selon le filtre
+    let endDate: Date | undefined;
+    if (dateFilter === 'week') {
+      endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + 7);
+    } else if (dateFilter === 'month') {
+      endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + 30);
+    }
+
+    // Filtrer: status = PUBLISHED et date >= aujourd'hui
+    const filter: any = {
+      status: EventStatus.PUBLISHED,
+      date: endDate ? { $gte: now, $lte: endDate } : { $gte: now },
+    };
+
+    // Récupérer les événements publiés avec pagination
+    const events = await this.eventModel
+      .find(filter)
+      .sort({ date: 1 }) // Tri par date croissante
+      .skip(skip)
+      .limit(limit)
+      .populate('createdBy', 'name email')
+      .exec();
+
+    // Compter le total d'événements correspondants
+    const total = await this.eventModel.countDocuments(filter);
+
+    // Ajouter remainingSeats pour chaque événement
+    const eventsWithSeats = await Promise.all(
+      events.map(async (event) => {
+        const remainingSeats = await this.calculateRemainingSeats(
+          event._id.toString(),
+        );
+        return {
+          id: event._id,
+          title: event.title,
+          description: event.description,
+          date: event.date,
+          location: event.location,
+          capacity: event.capacity,
+          status: event.status,
+          imageUrl: event.imageUrl,
+          createdBy: event.createdBy,
+          remainingSeats,
+        };
+      }),
+    );
+
+    return {
+      events: eventsWithSeats,
+      total,
+      page,
+      limit,
+    };
+  }
+
+  async findOnePublic(id: string) {
+    // Récupérer l'événement et populate createdBy (name uniquement)
+    const event = await this.eventModel
+      .findById(id)
+      .populate('createdBy', 'name')
+      .exec();
+
+    // Vérifier que l'événement existe
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
+    }
+
+    // Vérifier que l'événement est publié (sinon 404)
+    if (event.status !== EventStatus.PUBLISHED) {
+      throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
+    }
+
+    // Calculer les places restantes
+    const remainingSeats = await this.calculateRemainingSeats(id);
+
+    return {
+      id: event._id,
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      location: event.location,
+      capacity: event.capacity,
+      status: event.status,
+      imageUrl: event.imageUrl,
+      createdBy: event.createdBy,
+      remainingSeats,
+    };
+  }
+
   async findOne(id: string) {
     // Récupérer l'événement avec populate
     const event = await this.eventModel
