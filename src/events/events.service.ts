@@ -47,6 +47,42 @@ export class EventsService {
     };
   }
 
+  async findOne(id: string) {
+    // Récupérer l'événement avec populate
+    const event = await this.eventModel
+      .findById(id)
+      .populate('createdBy', 'name email')
+      .exec();
+
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
+    }
+
+    // TODO: Calculer les réservations une fois l'entité Reservation créée
+    // Pour l'instant, on retourne des valeurs par défaut
+    const reservationsCount = 0;
+    const confirmedReservations = 0;
+    const remainingSeats = event.capacity - confirmedReservations;
+
+    return {
+      id: event._id,
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      location: event.location,
+      capacity: event.capacity,
+      status: event.status,
+      imageUrl: event.imageUrl,
+      createdBy: event.createdBy,
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt,
+      // Champs calculés
+      reservationsCount,
+      confirmedReservations,
+      remainingSeats,
+    };
+  }
+
   async create(createEventDto: CreateEventDto, userId: string) {
     const newEvent = new this.eventModel({
       ...createEventDto,

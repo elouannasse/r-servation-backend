@@ -45,13 +45,16 @@ export class EventsController {
     return this.eventsService.findAll(pageNum, limitNum);
   }
 
+  // GET /events/admin/:id - Obtenir les détails complets d'un événement (ADMIN seulement)
+  @Get('admin/:id')
+  async findOneAdmin(@Param('id') id: string) {
+    return this.eventsService.findOne(id);
+  }
+
   // GET /events/:id - Obtenir un événement (ADMIN seulement)
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return {
-      message: `Détails de l'événement ${id}`,
-      requestedBy: user.email,
-    };
+  async findOne(@Param('id') id: string) {
+    return this.eventsService.findOne(id);
   }
 
   // POST /events - Créer un événement (ADMIN seulement)
