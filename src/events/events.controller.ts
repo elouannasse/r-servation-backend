@@ -11,25 +11,35 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { GetUser } from '../auth/decorators/get-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../enums/user-role.enum';
 
+/**
+ * Contrôleur pour la gestion des événements
+ * Toutes les routes sont protégées et nécessitent le rôle ADMIN
+ * 
+ * Protection:
+ * - @UseGuards(JwtAuthGuard, RolesGuard) : Vérifie l'authentification et les rôles
+ * - @Roles(UserRole.ADMIN) : Seuls les ADMIN peuvent accéder
+ */
 @Controller('events')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class EventsController {
+  
   // GET /events - Lister tous les événements (ADMIN seulement)
   @Get()
-  findAll(@GetUser() user: any) {
+  findAll(@CurrentUser() user: any) {
     return {
       message: 'Liste de tous les événements',
       requestedBy: user.email,
+      role: user.role,
     };
   }
 
   // GET /events/:id - Obtenir un événement (ADMIN seulement)
   @Get(':id')
-  findOne(@Param('id') id: string, @GetUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return {
       message: `Détails de l'événement ${id}`,
       requestedBy: user.email,
@@ -38,11 +48,12 @@ export class EventsController {
 
   // POST /events - Créer un événement (ADMIN seulement)
   @Post()
-  create(@Body() createEventDto: any, @GetUser() user: any) {
+  create(@Body() createEventDto: any, @CurrentUser() user: any) {
     return {
       message: 'Événement créé avec succès',
       event: createEventDto,
       createdBy: user.email,
+      createdByRole: user.role,
     };
   }
 
@@ -51,7 +62,7 @@ export class EventsController {
   update(
     @Param('id') id: string,
     @Body() updateEventDto: any,
-    @GetUser() user: any,
+    @CurrentUser() user: any,
   ) {
     return {
       message: `Événement ${id} modifié avec succès`,
@@ -62,7 +73,7 @@ export class EventsController {
 
   // DELETE /events/:id - Supprimer un événement (ADMIN seulement)
   @Delete(':id')
-  remove(@Param('id') id: string, @GetUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
     return {
       message: `Événement ${id} supprimé avec succès`,
       deletedBy: user.email,
