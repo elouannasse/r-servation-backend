@@ -7,12 +7,16 @@ import {
   Body,
   Param,
   UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../enums/user-role.enum';
+import { EventsService } from './events.service';
+import { CreateEventDto } from './dto/create-event.dto';
 
 /**
  * Contrôleur pour la gestion des événements
@@ -26,6 +30,7 @@ import { UserRole } from '../enums/user-role.enum';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class EventsController {
+  constructor(private readonly eventsService: EventsService) {}
   
   // GET /events - Lister tous les événements (ADMIN seulement)
   @Get()
@@ -48,13 +53,12 @@ export class EventsController {
 
   // POST /events - Créer un événement (ADMIN seulement)
   @Post()
-  create(@Body() createEventDto: any, @CurrentUser() user: any) {
-    return {
-      message: 'Événement créé avec succès',
-      event: createEventDto,
-      createdBy: user.email,
-      createdByRole: user.role,
-    };
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @Body() createEventDto: CreateEventDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.eventsService.create(createEventDto, user.id);
   }
 
   // PUT /events/:id - Modifier un événement (ADMIN seulement)
