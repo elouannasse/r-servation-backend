@@ -101,6 +101,40 @@ export class EventsService {
     };
   }
 
+  async findOnePublic(id: string) {
+    // Récupérer l'événement et populate createdBy (name uniquement)
+    const event = await this.eventModel
+      .findById(id)
+      .populate('createdBy', 'name')
+      .exec();
+
+    // Vérifier que l'événement existe
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
+    }
+
+    // Vérifier que l'événement est publié (sinon 404)
+    if (event.status !== EventStatus.PUBLISHED) {
+      throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
+    }
+
+    // Calculer les places restantes
+    const remainingSeats = await this.calculateRemainingSeats(id);
+
+    return {
+      id: event._id,
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      location: event.location,
+      capacity: event.capacity,
+      status: event.status,
+      imageUrl: event.imageUrl,
+      createdBy: event.createdBy,
+      remainingSeats,
+    };
+  }
+
   async findOne(id: string) {
     // Récupérer l'événement avec populate
     const event = await this.eventModel

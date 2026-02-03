@@ -72,12 +72,10 @@ export class EventsController {
     return this.eventsService.findOne(id);
   }
 
-  // GET /events/:id - Obtenir un événement (ADMIN seulement)
+  // GET /events/:id - Obtenir un événement publié (PUBLIC - pas d'authentification requise)
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  async findOne(@Param('id') id: string) {
-    return this.eventsService.findOne(id);
+  async findOnePublic(@Param('id') id: string) {
+    return this.eventsService.findOnePublic(id);
   }
 
   // POST /events - Créer un événement (ADMIN seulement)
