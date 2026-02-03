@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -24,6 +25,15 @@ import { CreateReservationDto } from './dto/create-reservation.dto';
 @UseGuards(JwtAuthGuard)
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
+
+  // GET /reservations/me - Lister les réservations de l'utilisateur connecté
+  @Get('me')
+  async findMyReservations(
+    @CurrentUser() user: any,
+    @Query('status') status?: string,
+  ) {
+    return this.reservationsService.findMyReservations(user.id, status);
+  }
 
   // POST /reservations - Créer une nouvelle réservation (PARTICIPANT seulement)
   @Post()

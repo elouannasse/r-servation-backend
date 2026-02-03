@@ -21,6 +21,25 @@ export class ReservationsService {
     private eventModel: Model<EventDocument>,
   ) {}
 
+  async findMyReservations(userId: string, status?: string) {
+    // Construire le filtre
+    const filter: any = { user: userId };
+    
+    // Ajouter le filtre par status si fourni
+    if (status) {
+      filter.status = status;
+    }
+
+    // Récupérer les réservations avec populate et tri
+    const reservations = await this.reservationModel
+      .find(filter)
+      .populate('event', 'title date location imageUrl status')
+      .sort({ createdAt: -1 }) // Tri par createdAt décroissant
+      .exec();
+
+    return reservations;
+  }
+
   async create(createReservationDto: CreateReservationDto, userId: string) {
     const { eventId } = createReservationDto;
 
