@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -33,14 +34,15 @@ import { UpdateEventDto } from './dto/update-event.dto';
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
   
-  // GET /events - Lister tous les événements (ADMIN seulement)
-  @Get()
-  findAll(@CurrentUser() user: any) {
-    return {
-      message: 'Liste de tous les événements',
-      requestedBy: user.email,
-      role: user.role,
-    };
+  // GET /events/admin - Lister TOUS les événements avec pagination (ADMIN seulement)
+  @Get('admin')
+  async findAllAdmin(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 10;
+    return this.eventsService.findAll(pageNum, limitNum);
   }
 
   // GET /events/:id - Obtenir un événement (ADMIN seulement)

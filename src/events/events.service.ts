@@ -12,6 +12,41 @@ export class EventsService {
     @InjectModel(Event.name) private eventModel: Model<EventDocument>,
   ) {}
 
+  async findAll(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    // Récupérer tous les événements avec pagination et populate
+    const events = await this.eventModel
+      .find()
+      .sort({ date: -1 }) // Tri par date décroissante
+      .skip(skip)
+      .limit(limit)
+      .populate('createdBy', 'name email') // Populate createdBy avec name et email
+      .exec();
+
+    // Compter le total d'événements
+    const total = await this.eventModel.countDocuments();
+
+    return {
+      events: events.map((event) => ({
+        id: event._id,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        location: event.location,
+        capacity: event.capacity,
+        status: event.status,
+        imageUrl: event.imageUrl,
+        createdBy: event.createdBy,
+        createdAt: event.createdAt,
+        updatedAt: event.updatedAt,
+      })),
+      total,
+      page,
+      limit,
+    };
+  }
+
   async create(createEventDto: CreateEventDto, userId: string) {
     const newEvent = new this.eventModel({
       ...createEventDto,
@@ -61,6 +96,10 @@ export class EventsService {
       updateData,
       { new: true, runValidators: true },
     );
+
+    if (!updatedEvent) {
+      throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
+    }
 
     return {
       message: 'Événement mis à jour avec succès',
