@@ -81,4 +81,30 @@ export class ReservationsService {
 
     return populatedReservation;
   }
+
+  async cancel(id: string, userId: string) {
+    // Vérifie que la réservation existe
+    const reservation = await this.reservationModel.findById(id);
+    if (!reservation) {
+      throw new NotFoundException(`Réservation avec l'ID ${id} non trouvée`);
+    }
+
+    // Vérifie que c'est bien la réservation du user connecté
+    if (reservation.user.toString() !== userId) {
+      throw new ConflictException(
+        'Vous ne pouvez pas annuler cette réservation',
+      );
+    }
+
+    // Change status à CANCELED
+    await this.reservationModel.findByIdAndUpdate(
+      id,
+      { status: ReservationStatus.CANCELED },
+      { new: true },
+    );
+
+    return {
+      message: 'Reservation canceled successfully',
+    };
+  }
 }

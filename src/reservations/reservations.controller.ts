@@ -38,12 +38,8 @@ export class ReservationsController {
 
   // DELETE /reservations/:id - Annuler une réservation
   @Delete(':id')
-  cancel(@Param('id') id: string, @CurrentUser() user: any) {
-    return {
-      message: `Réservation ${id} annulée avec succès`,
-      cancelledBy: user.email,
-      cancelledAt: new Date(),
-    };
+  async cancel(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.reservationsService.cancel(id, user.id);
   }
 
   // GET /reservations/event/:eventId - Lister les réservations d'un événement
