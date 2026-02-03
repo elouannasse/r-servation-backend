@@ -50,6 +50,57 @@ export class EventsService {
     };
   }
 
+  async findAllPublic(page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+    const now = new Date();
+
+    // Filtrer: status = PUBLISHED et date >= aujourd'hui
+    const filter = {
+      status: EventStatus.PUBLISHED,
+      date: { $gte: now },
+    };
+
+    // Récupérer les événements publiés avec pagination
+    const events = await this.eventModel
+      .find(filter)
+      .sort({ date: 1 }) // Tri par date croissante
+      .skip(skip)
+      .limit(limit)
+      .populate('createdBy', 'name email')
+      .exec();
+
+    // Compter le total d'événements correspondants
+    const total = await this.eventModel.countDocuments(filter);
+
+    // Ajouter remainingSeats pour chaque événement
+    const eventsWithSeats = await Promise.all(
+      events.map(async (event) => {
+        const remainingSeats = await this.calculateRemainingSeats(
+          event._id.toString(),
+        );
+        return {
+          id: event._id,
+          title: event.title,
+          description: event.description,
+          date: event.date,
+          location: event.location,
+          capacity: event.capacity,
+          status: event.status,
+          imageUrl: event.imageUrl,
+          createdBy: event.createdBy,
+          remainingSeats,
+        };
+      }),
+    );
+
+    return {
+      events: eventsWithSeats,
+      total,
+      page,
+      limit,
+    };
+  }
+
   async findOne(id: string) {
     // Récupérer l'événement avec populate
     const event = await this.eventModel

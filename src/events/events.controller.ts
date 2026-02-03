@@ -29,20 +29,32 @@ import { multerConfig } from '../config/multer.config';
 
 /**
  * Contrôleur pour la gestion des événements
- * Toutes les routes sont protégées et nécessitent le rôle ADMIN
+ * Routes publiques: GET /events (événements publiés)
+ * Routes protégées ADMIN: Toutes les autres routes
  * 
  * Protection:
  * - @UseGuards(JwtAuthGuard, RolesGuard) : Vérifie l'authentification et les rôles
  * - @Roles(UserRole.ADMIN) : Seuls les ADMIN peuvent accéder
  */
 @Controller('events')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
+
+  // GET /events - Lister les événements publiés (PUBLIC - pas d'authentification requise)
+  @Get()
+  async findAllPublic(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 10;
+    return this.eventsService.findAllPublic(pageNum, limitNum);
+  }
   
   // GET /events/admin - Lister TOUS les événements avec pagination (ADMIN seulement)
   @Get('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async findAllAdmin(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -54,19 +66,23 @@ export class EventsController {
 
   // GET /events/admin/:id - Obtenir les détails complets d'un événement (ADMIN seulement)
   @Get('admin/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async findOneAdmin(@Param('id') id: string) {
     return this.eventsService.findOne(id);
   }
 
   // GET /events/:id - Obtenir un événement (ADMIN seulement)
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async findOne(@Param('id') id: string) {
     return this.eventsService.findOne(id);
   }
 
   // POST /events - Créer un événement (ADMIN seulement)
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
+  @Post()  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)  @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createEventDto: CreateEventDto,
     @CurrentUser() user: any,
@@ -76,6 +92,8 @@ export class EventsController {
 
   // PUT /events/:id - Modifier un événement (ADMIN seulement)
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async update(
     @Param('id') id: string,
     @Body() updateEventDto: UpdateEventDto,
@@ -86,12 +104,16 @@ export class EventsController {
 
   // DELETE /events/:id - Annuler un événement (soft delete - ADMIN seulement)
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   async remove(@Param('id') id: string) {
     return this.eventsService.remove(id);
   }
 
   // POST /events/:id/upload-image - Upload d'image pour un événement (ADMIN seulement)
   @Post(':id/upload-image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   @UseInterceptors(FileInterceptor('image', multerConfig))
   async uploadImage(
     @Param('id') id: string,
