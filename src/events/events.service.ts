@@ -79,4 +79,23 @@ export class EventsService {
       },
     };
   }
+
+  async remove(id: string) {
+    // Vérifier que l'événement existe
+    const event = await this.eventModel.findById(id);
+    if (!event) {
+      throw new NotFoundException(`Événement avec l'ID ${id} non trouvé`);
+    }
+
+    // Soft delete: changer le status à CANCELED
+    await this.eventModel.findByIdAndUpdate(
+      id,
+      { status: EventStatus.CANCELED },
+      { new: true },
+    );
+
+    return {
+      message: 'Event canceled successfully',
+    };
+  }
 }

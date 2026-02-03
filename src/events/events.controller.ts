@@ -72,12 +72,9 @@ export class EventsController {
     return this.eventsService.update(id, updateEventDto);
   }
 
-  // DELETE /events/:id - Supprimer un événement (ADMIN seulement)
+  // DELETE /events/:id - Annuler un événement (soft delete - ADMIN seulement)
   @Delete(':id')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return {
-      message: `Événement ${id} supprimé avec succès`,
-      deletedBy: user.email,
-    };
+  async remove(@Param('id') id: string) {
+    return this.eventsService.remove(id);
   }
 }
