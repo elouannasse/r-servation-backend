@@ -8,65 +8,32 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserRole } from '../enums/user-role.enum';
+import { ReservationsService } from './reservations.service';
+import { CreateReservationDto } from './dto/create-reservation.dto';
 
 /**
  * Contrôleur pour la gestion des réservations
- * Toutes les routes sont protégées et nécessitent une authentification
- * 
- * Protection:
- * - @UseGuards(JwtAuthGuard) : Vérifie uniquement l'authentification
- * - Accessible par tous les utilisateurs authentifiés (ADMIN et PARTICIPANT)
+ * POST /reservations protégé par PARTICIPANT uniquement
+ * Autres routes authentifiées sans restriction de rôle
  */
 @Controller('reservations')
 @UseGuards(JwtAuthGuard)
 export class ReservationsController {
-  
-  // GET /reservations - Lister les réservations de l'utilisateur connecté
-  @Get()
-  findMyReservations(@CurrentUser() user: any) {
-    return {
-      message: 'Mes réservations',
-      userId: user.id,
-      userEmail: user.email,
-      userRole: user.role,
-      reservations: [
-        // Exemple de données
-        { id: 1, eventId: 1, status: 'confirmed' },
-        { id: 2, eventId: 3, status: 'pending' },
-      ],
-    };
-  }
+  constructor(private readonly reservationsService: ReservationsService) {}
 
-  // GET /reservations/:id - Obtenir une réservation spécifique
-  @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return {
-      message: `Détails de la réservation ${id}`,
-      reservation: {
-        id,
-        userId: user.id,
-        eventId: 1,
-        status: 'confirmed',
-      },
-    };
-  }
-
-  // POST /reservations - Créer une nouvelle réservation
+  // POST /reservations - Créer une nouvelle réservation (PARTICIPANT seulement)
   @Post()
-  create(@Body() createReservationDto: any, @CurrentUser() user: any) {
-    return {
-      message: 'Réservation créée avec succès',
-      reservation: {
-        id: Date.now(),
-        userId: user.id,
-        userEmail: user.email,
-        userRole: user.role,
-        ...createReservationDto,
-        status: 'pending',
-        createdAt: new Date(),
-      },
-    };
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.PARTICIPANT)
+  async create(
+    @Body() createReservationDto: CreateReservationDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.reservationsService.create(createReservationDto, user.id);
   }
 
   // DELETE /reservations/:id - Annuler une réservation
