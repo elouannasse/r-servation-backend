@@ -38,6 +38,8 @@ export class ReservationsService {
       .exec();
 
     return reservations;
+
+    
   }
 
   async create(createReservationDto: CreateReservationDto, userId: string) {
@@ -50,7 +52,7 @@ export class ReservationsService {
 
 
 
-      
+
 
       
     }
