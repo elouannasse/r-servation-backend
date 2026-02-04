@@ -47,6 +47,8 @@ export class ReservationsService {
     const event = await this.eventModel.findById(eventId);
     if (!event) {
       throw new NotFoundException(`Événement avec l'ID ${eventId} non trouvé`);
+
+      d 
     }
 
     // 2. Vérifie que status = PUBLISHED
