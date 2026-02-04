@@ -1,0 +1,30 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 10
+      arrivalRate: 5
+      name: "Warmup phase"
+    - duration: 30
+      arrivalRate: 20
+      name: "Load test phase"
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: "Get events"
+    weight: 80
+    flow:
+      - get:
+          url: "/events/public"
+
+  - name: "Get single event"
+    weight: 20
+    flow:
+      - get:
+          url: "/events/public"
+          capture:
+            - json: "$.events[0].id"
+              as: "eventId"
+      - get:
+          url: "/events/public/{{ eventId }}"

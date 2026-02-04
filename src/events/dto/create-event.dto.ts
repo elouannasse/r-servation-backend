@@ -2,12 +2,13 @@ import {
   IsString,
   IsNotEmpty,
   MinLength,
-  IsDateString,
   IsNumber,
   Min,
   IsOptional,
+  IsDate,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
+import { IsFutureDate } from '../../common/decorators/is-future-date.decorator';
 
 export class CreateEventDto {
   @IsString({ message: 'Le titre doit être une chaîne de caractères' })
@@ -19,17 +20,11 @@ export class CreateEventDto {
   @IsNotEmpty({ message: 'La description est requise' })
   description: string;
 
-  @IsDateString({}, { message: 'La date doit être au format ISO 8601' })
+  @Type(() => Date)
+  @IsDate({ message: 'La date doit être valide' })
   @IsNotEmpty({ message: 'La date est requise' })
-  @Transform(({ value }) => {
-    const date = new Date(value);
-    const now = new Date();
-    if (date < now) {
-      throw new Error('La date doit être dans le futur');
-    }
-    return value;
-  })
-  date: string;
+  @IsFutureDate({ message: 'La date doit être dans le futur' })
+  date: Date;
 
   @IsString({ message: 'Le lieu doit être une chaîne de caractères' })
   @IsNotEmpty({ message: 'Le lieu est requis' })

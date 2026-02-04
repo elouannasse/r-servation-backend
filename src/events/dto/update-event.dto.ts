@@ -2,14 +2,15 @@ import {
   IsString,
   IsNotEmpty,
   MinLength,
-  IsDateString,
   IsNumber,
   Min,
   IsOptional,
   IsEnum,
+  IsDate,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { EventStatus } from '../../enums/event-status.enum';
+import { IsFutureDate } from '../../common/decorators/is-future-date.decorator';
 
 export class UpdateEventDto {
   @IsOptional()
@@ -24,17 +25,11 @@ export class UpdateEventDto {
   description?: string;
 
   @IsOptional()
-  @IsDateString({}, { message: 'La date doit être au format ISO 8601' })
+  @Type(() => Date)
+  @IsDate({ message: 'La date doit être valide' })
   @IsNotEmpty({ message: 'La date ne peut pas être vide' })
-  @Transform(({ value }) => {
-    const date = new Date(value);
-    const now = new Date();
-    if (date < now) {
-      throw new Error('La date doit être dans le futur');
-    }
-    return value;
-  })
-  date?: string;
+  @IsFutureDate({ message: 'La date doit être dans le futur' })
+  date?: Date;
 
   @IsOptional()
   @IsString({ message: 'Le lieu doit être une chaîne de caractères' })
