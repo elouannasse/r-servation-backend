@@ -24,9 +24,17 @@ describe('ReservationsService', () => {
     find: jest.fn(),
     findOne: jest.fn(),
     findById: jest.fn(),
-    countDocuments: jest.fn(),
+    countDocuments: jest.fn().mockReturnValue({
+      session: jest.fn().mockReturnThis(),
+    }),
     findByIdAndUpdate: jest.fn(),
     exec: jest.fn(),
+    db: {
+      startSession: jest.fn().mockResolvedValue({
+        withTransaction: jest.fn().mockImplementation((fn) => fn()),
+        endSession: jest.fn(),
+      }),
+    },
   };
 
   const mockEventModel = {
@@ -74,7 +82,13 @@ describe('ReservationsService', () => {
   describe('create', () => {
     it('should throw BadRequestException if event is full', async () => {
       eventModel.findById.mockResolvedValue({ _id: 'eventId', capacity: 10, status: EventStatus.PUBLISHED });
-      reservationModel.countDocuments.mockResolvedValue(10); // Full
+      reservationModel.findOne.mockResolvedValue(null); // No existing reservation
+      
+      // Mock countDocuments to return 10 (full capacity)
+      const mockCountQuery = {
+        session: jest.fn().mockResolvedValue(10),
+      };
+      reservationModel.countDocuments.mockReturnValue(mockCountQuery);
 
       await expect(service.create({ eventId: 'eventId' }, 'userId'))
         .rejects.toThrow(BadRequestException);

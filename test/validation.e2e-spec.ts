@@ -36,8 +36,12 @@ describe('Validation (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
-    await mongoose.disconnect();
+    if (app) {
+      await app.close();
+    }
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
   });
 
   describe('Auth Registration', () => {

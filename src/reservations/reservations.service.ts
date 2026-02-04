@@ -49,12 +49,6 @@ export class ReservationsService {
     const event = await this.eventModel.findById(eventId);
     if (!event) {
       throw new NotFoundException(`Événement avec l'ID ${eventId} non trouvé`);
-
-
-
-
-
-      
     }
 
     // 2. Vérifie que status = PUBLISHED
@@ -62,12 +56,6 @@ export class ReservationsService {
       throw new BadRequestException(
         "Impossible de réserver : l'événement n'est pas publié",
       );
-    }
-
-    // 3. Vérifie que des places sont disponibles
-    const isAvailable = await this.checkAvailability(eventId);
-    if (!isAvailable) {
-      throw new BadRequestException('Event is full');
     }
 
     // 4. Vérifie qu'il n'a pas déjà une réservation active (status != CANCELED, REFUSED)
@@ -85,23 +73,44 @@ export class ReservationsService {
       );
     }
 
-    // Crée la réservation avec status = PENDING
-    const newReservation = new this.reservationModel({
-      event: eventId,
-      user: userId,
-      status: ReservationStatus.PENDING,
-    });
+    // 3. Vérifie atomiquement la disponibilité et crée la réservation
+    // Utilise une transaction pour éviter les conditions de course
+    const session = await this.reservationModel.db.startSession();
+    
+    try {
+      return await session.withTransaction(async () => {
+        // Recompte les réservations confirmées dans la transaction
+        const confirmedCount = await this.reservationModel.countDocuments({
+          event: eventId,
+          status: ReservationStatus.CONFIRMED,
+        }).session(session);
 
-    const savedReservation = await newReservation.save();
+        if (confirmedCount >= event.capacity) {
+          throw new BadRequestException('Event is full');
+        }
 
-    // Populate pour retourner les détails
-    const populatedReservation = await this.reservationModel
-      .findById(savedReservation._id)
-      .populate('event', 'title date location')
-      .populate('user', 'name email')
-      .exec();
+        // Crée la réservation avec status = PENDING
+        const newReservation = new this.reservationModel({
+          event: eventId,
+          user: userId,
+          status: ReservationStatus.PENDING,
+        });
 
-    return populatedReservation;
+        const savedReservation = await newReservation.save({ session });
+
+        // Populate pour retourner les détails
+        const populatedReservation = await this.reservationModel
+          .findById(savedReservation._id)
+          .populate('event', 'title date location')
+          .populate('user', 'name email')
+          .session(session)
+          .exec();
+
+        return populatedReservation;
+      });
+    } finally {
+      await session.endSession();
+    }
   }
 
   async cancel(id: string, userId: string) {

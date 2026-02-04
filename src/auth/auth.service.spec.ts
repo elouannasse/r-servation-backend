@@ -6,6 +6,12 @@ import { User } from '../schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import { UnauthorizedException } from '@nestjs/common';
 
+// Mock bcrypt module
+jest.mock('bcrypt', () => ({
+  compare: jest.fn(),
+  hash: jest.fn(),
+}));
+
 describe('AuthService', () => {
   let service: AuthService;
   let userModel: any;
@@ -46,12 +52,15 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
     userModel = module.get(getModelToken(User.name));
+    
+    // Reset all mocks
+    jest.clearAllMocks();
   });
 
   describe('login', () => {
     it('should return tokens for valid credentials', async () => {
       userModel.findOne.mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.login({
         email: 'test@example.com',
@@ -64,7 +73,7 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException for wrong password', async () => {
       userModel.findOne.mockResolvedValue(mockUser);
-      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
         service.login({

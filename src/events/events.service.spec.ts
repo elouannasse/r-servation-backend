@@ -24,15 +24,22 @@ describe('EventsService', () => {
     }),
   };
 
-  const mockEventModel = {
-    new: jest.fn().mockImplementation(() => mockEvent),
-    constructor: jest.fn().mockImplementation(() => mockEvent),
+  const mockEventModel = jest.fn().mockImplementation((data: any) => ({
+    ...data,
+    save: jest.fn().mockResolvedValue({
+      _id: 'eventId',
+      ...data,
+      status: EventStatus.DRAFT,
+    }),
+  }));
+  
+  // Add static methods to the mock constructor
+  Object.assign(mockEventModel, {
     find: jest.fn(),
     findById: jest.fn(),
     countDocuments: jest.fn(),
     findByIdAndUpdate: jest.fn(),
-    save: jest.fn(),
-  };
+  });
 
   const mockReservationModel = {
     countDocuments: jest.fn(),
@@ -83,26 +90,27 @@ describe('EventsService', () => {
         capacity: 20,
       };
       
-      // NestJS Mongoose uses constructor for new instances
-      const saveSpy = jest.fn().mockResolvedValue({
+      const savedEvent = {
         _id: 'newId',
         ...createEventDto,
         status: EventStatus.DRAFT,
-      });
+        createdBy: 'userId',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-      jest.spyOn(service as any, 'eventModel', 'get' as any).mockReturnValue(
-        class {
-          constructor() { return { ...createEventDto, save: saveSpy }; }
-          static findById = jest.fn();
-        }
-      );
-      
-      // Simpler approach for testing create in NestJS services
-      mockEventModel.save = saveSpy;
+      // Mock the save method to return the saved event
+      const mockSave = jest.fn().mockResolvedValue(savedEvent);
+      mockEventModel.mockReturnValueOnce({
+        ...createEventDto,
+        save: mockSave,
+      });
       
       const result = await service.create(createEventDto as any, 'userId');
+      
       expect(result.message).toBe('Événement créé avec succès');
       expect(result.event.title).toBe(createEventDto.title);
+      expect(mockSave).toHaveBeenCalled();
     });
   });
 });
