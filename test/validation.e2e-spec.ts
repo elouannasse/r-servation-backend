@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import request, { Response as SupertestResponse } from 'supertest';
+import request from 'supertest';
 import { Request, Response, NextFunction } from 'express';
 import { AppModule } from './../src/app.module';
 import mongoose from 'mongoose';
@@ -53,7 +53,10 @@ describe('Validation (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
     }
@@ -61,7 +64,8 @@ describe('Validation (e2e)', () => {
 
   describe('Auth Registration', () => {
     it('should return 400 for invalid email', async () => {
-      const res: SupertestResponse = await request(app.getHttpServer())
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const res = await request(app.getHttpServer())
         .post('/auth/register')
         .send({
           email: 'invalid-email',
@@ -70,33 +74,40 @@ describe('Validation (e2e)', () => {
         })
         .expect(400);
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(res.body.message).toContain('Email invalide');
     });
-  });
 
-  it('should return 400 for short password', async () => {
-    const res: SupertestResponse = await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({
-        email: 'test@example.com',
-        password: '123',
-        name: 'John Doe',
-      })
-      .expect(400);
+    it('should return 400 for short password', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({
+          email: 'test@example.com',
+          password: '123',
+          name: 'John Doe',
+        })
+        .expect(400);
 
-    expect(res.body.message).toContain(
-      'Le mot de passe doit contenir au moins 6 caractères',
-    );
-  });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(res.body.message).toContain(
+        'Le mot de passe doit contenir au moins 6 caractères',
+      );
+    });
 
-  it('should return 400 for missing fields', async () => {
-    const res: SupertestResponse = await request(app.getHttpServer())
-      .post('/auth/register')
-      .send({})
-      .expect(400);
+    it('should return 400 for missing fields', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const res = await request(app.getHttpServer())
+        .post('/auth/register')
+        .send({})
+        .expect(400);
 
-    expect(res.body.message).toContain("L'email est requis");
-    expect(res.body.message).toContain('Le mot de passe est requis');
-    expect(res.body.message).toContain('Le nom est requis');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(res.body.message).toContain("L'email est requis");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(res.body.message).toContain('Le mot de passe est requis');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(res.body.message).toContain('Le nom est requis');
+    });
   });
 });
