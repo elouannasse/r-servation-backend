@@ -45,6 +45,7 @@ export async function getCurrentUser(): Promise<User> {
 
 export interface UpdateProfileData {
   name: string;
+  
   email: string;
 }
 
