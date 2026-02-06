@@ -1,9 +1,10 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Request } from 'express';
 
 /**
  * Décorateur pour récupérer l'utilisateur actuellement authentifié depuis la requête
  * L'utilisateur est injecté par JwtStrategy après validation du token
- * 
+ *
  * @example
  * @Get('profile')
  * @UseGuards(JwtAuthGuard)
@@ -13,7 +14,7 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
  */
 export const CurrentUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
+    const request = ctx.switchToHttp().getRequest<Request>();
     return request.user;
   },
 );

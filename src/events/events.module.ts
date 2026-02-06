@@ -13,8 +13,6 @@ import { AuthModule } from '../auth/auth.module';
       { name: Reservation.name, schema: ReservationSchema },
     ]),
     AuthModule,
-
-    
   ],
   controllers: [EventsController],
   providers: [EventsService],

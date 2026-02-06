@@ -12,9 +12,6 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
-  ParseFilePipe,
-  MaxFileSizeValidator,
-  FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,11 +24,18 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { multerConfig } from '../config/multer.config';
 
+interface UserPayload {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+}
+
 /**
  * Contrôleur pour la gestion des événements
  * Routes publiques: GET /events (événements publiés)
  * Routes protégées ADMIN: Toutes les autres routes
- * 
+ *
  * Protection:
  * - @UseGuards(JwtAuthGuard, RolesGuard) : Vérifie l'authentification et les rôles
  * - @Roles(UserRole.ADMIN) : Seuls les ADMIN peuvent accéder
@@ -52,7 +56,7 @@ export class EventsController {
     const filter = dateFilter || 'all';
     return this.eventsService.findAllPublic(pageNum, limitNum, filter);
   }
-  
+
   // GET /events/admin - Lister TOUS les événements avec pagination (ADMIN seulement)
   @Get('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -81,11 +85,13 @@ export class EventsController {
   }
 
   // POST /events - Créer un événement (ADMIN seulement)
-  @Post()  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)  @HttpCode(HttpStatus.CREATED)
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createEventDto: CreateEventDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: UserPayload,
   ) {
     return this.eventsService.create(createEventDto, user.id);
   }
@@ -97,7 +103,6 @@ export class EventsController {
   async update(
     @Param('id') id: string,
     @Body() updateEventDto: UpdateEventDto,
-    @CurrentUser() user: any,
   ) {
     return this.eventsService.update(id, updateEventDto);
   }

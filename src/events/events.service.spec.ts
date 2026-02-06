@@ -5,41 +5,35 @@ import { Event } from '../schemas/event.schema';
 import { Reservation } from '../schemas/reservation.schema';
 import { EventStatus } from '../enums/event-status.enum';
 import { ReservationStatus } from '../enums/reservation-status.enum';
+import { CreateEventDto } from './dto/create-event.dto';
 
 describe('EventsService', () => {
   let service: EventsService;
-  let eventModel: any;
-  let reservationModel: any;
-
-  const mockEvent = {
-    _id: 'eventId',
-    title: 'Test Event',
-    capacity: 10,
-    status: EventStatus.DRAFT,
-    save: jest.fn().mockResolvedValue({
-      _id: 'eventId',
-      title: 'Test Event',
-      capacity: 10,
-      status: EventStatus.DRAFT,
-    }),
+  let eventModel: {
+    find: jest.Mock;
+    findById: jest.Mock;
+    countDocuments: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
   };
+  let reservationModel: { countDocuments: jest.Mock };
 
-  const mockEventModel = jest.fn().mockImplementation((data: any) => ({
-    ...data,
-    save: jest.fn().mockResolvedValue({
-      _id: 'eventId',
+  const mockEventModel = jest
+    .fn()
+    .mockImplementation((data: Record<string, unknown>) => ({
       ...data,
-      status: EventStatus.DRAFT,
-    }),
-  }));
-  
+      save: jest.fn().mockResolvedValue({
+        _id: 'eventId',
+        ...data,
+        status: EventStatus.DRAFT,
+      }),
+    }));
+
   // Add static methods to the mock constructor
   Object.assign(mockEventModel, {
     find: jest.fn(),
     findById: jest.fn(),
     countDocuments: jest.fn(),
     findByIdAndUpdate: jest.fn(),
-    
   });
 
   const mockReservationModel = {
@@ -71,7 +65,7 @@ describe('EventsService', () => {
       eventModel.findById.mockResolvedValue({ capacity: 10 });
       reservationModel.countDocuments.mockResolvedValue(4);
 
-      const result = await service.calculateRemainingSeats('eventId');
+      const result: number = await service.calculateRemainingSeats('eventId');
       expect(result).toBe(6);
       expect(eventModel.findById).toHaveBeenCalledWith('eventId');
       expect(reservationModel.countDocuments).toHaveBeenCalledWith({
@@ -90,7 +84,7 @@ describe('EventsService', () => {
         location: 'Loc',
         capacity: 20,
       };
-      
+
       const savedEvent = {
         _id: 'newId',
         ...createEventDto,
@@ -106,9 +100,12 @@ describe('EventsService', () => {
         ...createEventDto,
         save: mockSave,
       });
-      
-      const result = await service.create(createEventDto as any, 'userId');
-      
+
+      const result = await service.create(
+        createEventDto as CreateEventDto,
+        'userId',
+      );
+
       expect(result.message).toBe('Événement créé avec succès');
       expect(result.event.title).toBe(createEventDto.title);
       expect(mockSave).toHaveBeenCalled();

@@ -6,52 +6,52 @@ export type EventDocument = Event & Document;
 
 @Schema({ timestamps: true })
 export class Event {
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     minlength: 3,
     trim: true,
   })
   title: string;
 
-  @Prop({ 
+  @Prop({
     required: true,
     trim: true,
   })
   description: string;
 
-  @Prop({ 
+  @Prop({
     required: true,
     type: Date,
   })
   date: Date;
 
-  @Prop({ 
+  @Prop({
     required: true,
     trim: true,
   })
   location: string;
 
-  @Prop({ 
+  @Prop({
     required: true,
     min: 1,
     type: Number,
   })
   capacity: number;
 
-  @Prop({ 
+  @Prop({
     type: String,
     enum: EventStatus,
     default: EventStatus.DRAFT,
   })
   status: EventStatus;
 
-  @Prop({ 
+  @Prop({
     required: false,
     trim: true,
   })
   imageUrl?: string;
 
-  @Prop({ 
+  @Prop({
     type: Types.ObjectId,
     ref: 'User',
     required: true,
@@ -68,11 +68,11 @@ export class Event {
 export const EventSchema = SchemaFactory.createForClass(Event);
 
 // Validation personnalisée pour s'assurer que la date est dans le futur
-EventSchema.pre('save', function() {
+EventSchema.pre('save', function () {
   if (this.isNew || this.isModified('date')) {
     const now = new Date();
     if (this.date < now) {
-      throw new Error('La date de l\'événement doit être dans le futur');
+      throw new Error("La date de l'événement doit être dans le futur");
     }
   }
 });

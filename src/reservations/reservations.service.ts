@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Reservation, ReservationDocument } from '../schemas/reservation.schema';
+import {
+  Reservation,
+  ReservationDocument,
+} from '../schemas/reservation.schema';
 import { Event, EventDocument } from '../schemas/event.schema';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { EventStatus } from '../enums/event-status.enum';
@@ -23,14 +26,17 @@ export class ReservationsService {
 
   async findMyReservations(userId: string, status?: string) {
     // Construire le filtre
+
     const filter: any = { user: userId };
-    
+
     // Ajouter le filtre par status si fourni
     if (status) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       filter.status = status;
     }
 
     // Récupérer les réservations avec populate et tri
+
     const reservations = await this.reservationModel
       .find(filter)
       .populate('event', 'title date location imageUrl status')
@@ -38,8 +44,6 @@ export class ReservationsService {
       .exec();
 
     return reservations;
-
-    
   }
 
   async create(createReservationDto: CreateReservationDto, userId: string) {
@@ -76,14 +80,16 @@ export class ReservationsService {
     // 3. Vérifie atomiquement la disponibilité et crée la réservation
     // Utilise une transaction pour éviter les conditions de course
     const session = await this.reservationModel.db.startSession();
-    
+
     try {
       return await session.withTransaction(async () => {
         // Recompte les réservations confirmées dans la transaction
-        const confirmedCount = await this.reservationModel.countDocuments({
-          event: eventId,
-          status: ReservationStatus.CONFIRMED,
-        }).session(session);
+        const confirmedCount = await this.reservationModel
+          .countDocuments({
+            event: eventId,
+            status: ReservationStatus.CONFIRMED,
+          })
+          .session(session);
 
         if (confirmedCount >= event.capacity) {
           throw new BadRequestException('Event is full');

@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Event, EventDocument } from '../schemas/event.schema';
-import { Reservation, ReservationDocument } from '../schemas/reservation.schema';
+import {
+  Reservation,
+  ReservationDocument,
+} from '../schemas/reservation.schema';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventStatus } from '../enums/event-status.enum';
@@ -12,7 +15,8 @@ import { ReservationStatus } from '../enums/reservation-status.enum';
 export class EventsService {
   constructor(
     @InjectModel(Event.name) private eventModel: Model<EventDocument>,
-    @InjectModel(Reservation.name) private reservationModel: Model<ReservationDocument>,
+    @InjectModel(Reservation.name)
+    private reservationModel: Model<ReservationDocument>,
   ) {}
 
   async findAll(page: number = 1, limit: number = 10) {
@@ -69,12 +73,14 @@ export class EventsService {
     }
 
     // Filtrer: status = PUBLISHED et date >= aujourd'hui
+
     const filter: any = {
       status: EventStatus.PUBLISHED,
       date: endDate ? { $gte: now, $lte: endDate } : { $gte: now },
     };
 
     // Récupérer les événements publiés avec pagination
+
     const events = await this.eventModel
       .find(filter)
       .sort({ date: 1 }) // Tri par date croissante
@@ -162,12 +168,14 @@ export class EventsService {
 
     // Calculer les places restantes
     const remainingSeats = await this.calculateRemainingSeats(id);
-    
+
     // Compter toutes les réservations et les confirmées
-    const reservationsCount = await this.reservationModel.countDocuments({ event: id });
-    const confirmedReservations = await this.reservationModel.countDocuments({ 
-      event: id, 
-      status: ReservationStatus.CONFIRMED 
+    const reservationsCount = await this.reservationModel.countDocuments({
+      event: id,
+    });
+    const confirmedReservations = await this.reservationModel.countDocuments({
+      event: id,
+      status: ReservationStatus.CONFIRMED,
     });
 
     return {
@@ -225,14 +233,17 @@ export class EventsService {
     }
 
     // Préparer les données à mettre à jour
+
     const updateData: any = { ...updateEventDto };
-    
+
     // Convertir la date si elle est fournie
     if (updateEventDto.date) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       updateData.date = new Date(updateEventDto.date);
     }
 
     // Mettre à jour l'événement
+
     const updatedEvent = await this.eventModel.findByIdAndUpdate(
       id,
       updateData,
