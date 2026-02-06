@@ -74,7 +74,7 @@ export class EventsService {
 
     // Filtrer: status = PUBLISHED et date >= aujourd'hui
 
-    const filter: any = {
+    const filter: Record<string, unknown> = {
       status: EventStatus.PUBLISHED,
       date: endDate ? { $gte: now, $lte: endDate } : { $gte: now },
     };
@@ -234,11 +234,10 @@ export class EventsService {
 
     // Préparer les données à mettre à jour
 
-    const updateData: any = { ...updateEventDto };
+    const updateData: Record<string, unknown> = { ...updateEventDto };
 
     // Convertir la date si elle est fournie
     if (updateEventDto.date) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       updateData.date = new Date(updateEventDto.date);
     }
 
