@@ -5,24 +5,36 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
 
   return (
-    <nav style={styles.nav}>
-      <div style={styles.container}>
-        <Link href="/" style={styles.brand}>
+    <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link
+          href="/"
+          className="text-xl font-bold text-blue-500 hover:text-blue-600 transition-colors"
+        >
           Reservation App
         </Link>
 
-        <div style={styles.links}>
+        <div className="flex items-center gap-4">
           {isAuthenticated ? (
             <>
-              <Link href="/profile" style={styles.link}>
+              <Link
+                href="/profile"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
                 {user?.name || "Profil"}
               </Link>
-              <button onClick={logout} style={styles.logoutBtn}>
+              <button
+                onClick={logout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+              >
                 Déconnexion
               </button>
             </>
           ) : (
-            <Link href="/login" style={styles.loginLink}>
+            <Link
+              href="/login"
+              className="text-blue-500 hover:text-blue-600 border border-blue-500 hover:border-blue-600 px-4 py-2 rounded-md text-sm font-semibold transition-colors"
+            >
               Connexion
             </Link>
           )}
@@ -31,62 +43,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  nav: {
-    backgroundColor: "#fff",
-    borderBottom: "1px solid #e0e0e0",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-  },
-  container: {
-    maxWidth: "1200px",
-    margin: "0 auto",
-    padding: "0 1.5rem",
-    height: "60px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  brand: {
-    fontSize: "1.25rem",
-    fontWeight: "700",
-    color: "#3498db",
-    textDecoration: "none",
-  },
-  links: {
-    display: "flex",
-    alignItems: "center",
-    gap: "1rem",
-  },
-  link: {
-    color: "#555",
-    textDecoration: "none",
-    fontSize: "0.95rem",
-    fontWeight: "500",
-    padding: "0.4rem 0.75rem",
-    borderRadius: "4px",
-    transition: "background-color 0.2s",
-  },
-  loginLink: {
-    color: "#3498db",
-    textDecoration: "none",
-    fontSize: "0.95rem",
-    fontWeight: "600",
-    padding: "0.5rem 1rem",
-    border: "1px solid #3498db",
-    borderRadius: "4px",
-  },
-  logoutBtn: {
-    backgroundColor: "#e74c3c",
-    color: "#fff",
-    border: "none",
-    padding: "0.5rem 1rem",
-    borderRadius: "4px",
-    fontSize: "0.9rem",
-    fontWeight: "500",
-    cursor: "pointer",
-  },
-};
