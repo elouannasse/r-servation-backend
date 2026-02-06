@@ -12,6 +12,10 @@ $ npm install
 
 ## Environment Variables
 
+
+
+
+
 Copy the `.env.example` file to `.env` and configure the following variables:
 
 ### Backend
