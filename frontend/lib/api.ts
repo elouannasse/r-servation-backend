@@ -45,7 +45,7 @@ export async function getCurrentUser(): Promise<User> {
 
 export interface UpdateProfileData {
   name: string;
-  
+
   email: string;
 }
 
@@ -54,4 +54,43 @@ export async function updateProfile(data: UpdateProfileData): Promise<User> {
     method: "PUT",
     body: JSON.stringify(data),
   });
+}
+
+// Events
+export interface EventsResponse {
+  events: unknown[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export async function getPublicEvents(
+  page = 1,
+  limit = 10,
+): Promise<EventsResponse> {
+  return fetchWithAuth<EventsResponse>(`/events?page=${page}&limit=${limit}`);
+}
+
+export async function getAdminEvents(
+  page = 1,
+  limit = 10,
+): Promise<EventsResponse> {
+  return fetchWithAuth<EventsResponse>(
+    `/events/admin?page=${page}&limit=${limit}`,
+  );
+}
+
+// Reservations
+export interface Reservation {
+  _id: string;
+  event: unknown;
+  status: string;
+  createdAt: string;
+}
+
+export async function getMyReservations(
+  status?: string,
+): Promise<Reservation[]> {
+  const query = status ? `?status=${status}` : "";
+  return fetchWithAuth<Reservation[]>(`/reservations/me${query}`);
 }

@@ -35,7 +35,7 @@ export default function Navbar() {
       </Link>
       {isAuthenticated && (
         <Link
-          href={isAdmin ? "/admin/events" : "/reservations"}
+          href="/dashboard"
           className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium transition-colors"
           onClick={() => setMobileOpen(false)}
         >
