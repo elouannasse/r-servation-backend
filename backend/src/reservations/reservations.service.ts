@@ -27,11 +27,10 @@ export class ReservationsService {
   async findMyReservations(userId: string, status?: string) {
     // Construire le filtre
 
-    const filter: any = { user: userId };
+    const filter: Record<string, unknown> = { user: userId };
 
     // Ajouter le filtre par status si fourni
     if (status) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       filter.status = status;
     }
 
