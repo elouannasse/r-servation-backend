@@ -5,6 +5,7 @@ import { useToast } from "../hooks/useToast";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import { ButtonSpinner } from "../components/Loader";
+import ErrorMessage from "../components/ErrorMessage";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -56,11 +57,7 @@ export default function Login() {
           Connexion
         </h1>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-center text-sm">
-            {error}
-          </div>
-        )}
+        {error && <ErrorMessage message={error} className="mb-4" />}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <Input

@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import Loader, { ButtonSpinner } from "../components/Loader";
+import ErrorMessage from "../components/ErrorMessage";
 
 interface FormErrors {
   name?: string;
@@ -86,9 +87,8 @@ export default function Profile() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
-        <div className="text-center p-8 bg-white rounded-lg shadow-md">
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Erreur</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md w-full">
+          <ErrorMessage message={error} className="mb-4" />
           <Button onClick={() => router.push("/")}>
             Retour à l&apos;accueil
           </Button>
