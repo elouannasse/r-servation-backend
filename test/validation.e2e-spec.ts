@@ -15,8 +15,6 @@ interface UserPayload {
 
 interface RequestWithUser extends Request {
   user: UserPayload;
-
-  
 }
 
 describe('Validation (e2e)', () => {
