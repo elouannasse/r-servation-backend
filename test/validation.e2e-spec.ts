@@ -56,6 +56,7 @@ describe('Validation (e2e)', () => {
     if (app) {
       await app.close();
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
     }
@@ -63,6 +64,7 @@ describe('Validation (e2e)', () => {
 
   describe('Auth Registration', () => {
     it('should return 400 for invalid email', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return request(app.getHttpServer())
         .post('/auth/register')
         .send({
@@ -118,7 +120,7 @@ describe('Event Creation', () => {
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - 1);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return request(app.getHttpServer())
       .post('/events')
       .send({
@@ -139,7 +141,7 @@ describe('Event Creation', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return request(app.getHttpServer())
       .post('/events')
       .send({
@@ -160,7 +162,7 @@ describe('Event Creation', () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 7);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return request(app.getHttpServer())
       .post('/events')
       .send({
@@ -180,7 +182,7 @@ describe('Event Creation', () => {
 
 describe('Reservation Creation', () => {
   it('should return 400 for invalid eventId (MongoId)', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return request(app.getHttpServer())
       .post('/reservations')
       .send({
