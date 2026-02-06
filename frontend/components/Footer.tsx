@@ -26,10 +26,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/profile"
+                  href="/events"
                   className="hover:text-white transition-colors"
                 >
-                  Mon Profil
+                  Événements
                 </Link>
               </li>
             </ul>
@@ -37,15 +37,31 @@ export default function Footer() {
 
           <div>
             <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-3">
-              Contact
+              Informations
             </h4>
-            <p className="text-sm text-gray-400">support@reservation-app.com</p>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/about"
+                  className="hover:text-white transition-colors"
+                >
+                  À propos
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="hover:text-white transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Reservation App. Tous droits
-          réservés.
+          &copy; 2025 Reservation App. Tous droits réservés.
         </div>
       </div>
     </footer>
