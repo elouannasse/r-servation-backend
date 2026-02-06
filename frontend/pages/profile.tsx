@@ -1,13 +1,8 @@
-import { useEffect, useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/router";
-import { getCurrentUser, updateProfile } from "../lib/api";
+import { updateProfile } from "../lib/api";
 import { showToast } from "../components/Toast";
-
-interface User {
-  name: string;
-  email: string;
-  role: string;
-}
+import { useAuth } from "../context/AuthContext";
 
 interface FormErrors {
   name?: string;
@@ -15,8 +10,7 @@ interface FormErrors {
 }
 
 export default function Profile() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { user, loading, isAuthenticated, logout, setUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -28,38 +22,10 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    async function loadUser() {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
-
-        const userData: User = await getCurrentUser();
-        setUser(userData);
-      } catch (err) {
-        if (err instanceof Error) {
-          console.error("Erreur lors du chargement du profil:", err);
-          setError(err.message);
-
-          if (err.message.includes("401") || err.message.includes("403")) {
-            localStorage.removeItem("token");
-            router.push("/login");
-          }
-        }
-      } finally {
-        setLoading(false);
-      }
+    if (!loading && !isAuthenticated) {
+      router.push("/login");
     }
-
-    loadUser();
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/login");
-  };
+  }, [loading, isAuthenticated, router]);
 
   const openEditForm = () => {
     setEditName(user?.name || "");
@@ -99,7 +65,7 @@ export default function Profile() {
       });
       setUser(updated);
       setEditing(false);
-      showToast("Profil mis à jour avec succès", "success");
+      showToast("Profil mis \u00e0 jour avec succ\u00e8s", "success");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Erreur lors de la mise à jour";
@@ -249,7 +215,7 @@ export default function Profile() {
           >
             Retour à l&apos;accueil
           </button>
-          <button onClick={handleLogout} style={styles.buttonDanger}>
+          <button onClick={logout} style={styles.buttonDanger}>
             Se déconnecter
           </button>
         </div>

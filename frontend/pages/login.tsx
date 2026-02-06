@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/router";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -7,6 +8,7 @@ export default function Login() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,7 +31,7 @@ export default function Login() {
       }
 
       const data = await response.json();
-      localStorage.setItem("token", data.token);
+      await login(data.token);
       router.push("/profile");
     } catch (err) {
       if (err instanceof Error) {
