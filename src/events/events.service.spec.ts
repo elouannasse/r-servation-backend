@@ -39,6 +39,7 @@ describe('EventsService', () => {
     findById: jest.fn(),
     countDocuments: jest.fn(),
     findByIdAndUpdate: jest.fn(),
+    
   });
 
   const mockReservationModel = {

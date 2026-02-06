@@ -16,7 +16,7 @@ export class UpdateEventDto {
   @IsOptional()
   @IsString({ message: 'Le titre doit être une chaîne de caractères' })
   @IsNotEmpty({ message: 'Le titre ne peut pas être vide' })
-  @MinLength(3, { message: 'Le titre doit contenir au moins 3 caractères' })
+  @MinLength(3, { message: 'Le titre doit contenir au moins 3 caractères' }) 
   title?: string;
 
   @IsOptional()
