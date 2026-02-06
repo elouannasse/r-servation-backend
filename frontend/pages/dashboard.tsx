@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import { getAdminEvents, getMyReservations } from "../lib/api";
+import Loader from "../components/Loader";
 
 interface Stats {
   count: number;
@@ -87,11 +88,7 @@ export default function Dashboard() {
   }, [user]);
 
   if (loading || !isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-blue-500" />
-      </div>
-    );
+    return <Loader fullPage />;
   }
 
   return (

@@ -1,15 +1,15 @@
 import type { AppProps } from "next/app";
 import { AuthProvider } from "../context/AuthContext";
-import { ToastContainer } from "../components/Toast";
+import { Toaster } from "react-hot-toast";
 import Layout from "../components/Layout";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
-      <ToastContainer />
       <Layout>
         <Component {...pageProps} />
+        <Toaster position="top-right" />
       </Layout>
     </AuthProvider>
   );

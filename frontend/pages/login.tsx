@@ -1,8 +1,10 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../hooks/useToast";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
+import { ButtonSpinner } from "../components/Loader";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -11,6 +13,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuth();
+  const toast = useToast();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,13 +37,13 @@ export default function Login() {
 
       const data = await response.json();
       await login(data.token);
+      toast.success("Connexion réussie !");
       router.push("/profile");
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Une erreur est survenue");
-      }
+      const message =
+        err instanceof Error ? err.message : "Une erreur est survenue";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -78,7 +81,12 @@ export default function Login() {
             placeholder="••••••••"
           />
 
-          <Button type="submit" disabled={loading} className="w-full mt-2 py-3">
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-2 py-3 flex items-center justify-center"
+          >
+            {loading && <ButtonSpinner />}
             {loading ? "Connexion..." : "Se connecter"}
           </Button>
         </form>

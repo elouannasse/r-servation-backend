@@ -1,10 +1,11 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/router";
 import { updateProfile } from "../lib/api";
-import { showToast } from "../components/Toast";
+import { useToast } from "../hooks/useToast";
 import { useAuth } from "../context/AuthContext";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
+import Loader, { ButtonSpinner } from "../components/Loader";
 
 interface FormErrors {
   name?: string;
@@ -15,6 +16,7 @@ export default function Profile() {
   const { user, loading, isAuthenticated, logout, setUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const toast = useToast();
 
   // Edit form state
   const [editing, setEditing] = useState(false);
@@ -67,25 +69,18 @@ export default function Profile() {
       });
       setUser(updated);
       setEditing(false);
-      showToast("Profil mis \u00e0 jour avec succ\u00e8s", "success");
+      toast.success("Profil mis à jour avec succès");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Erreur lors de la mise à jour";
-      showToast(message, "error");
+      toast.error(message);
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
-        <div className="text-center p-12 bg-white rounded-lg shadow-md">
-          <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Chargement du profil...</p>
-        </div>
-      </div>
-    );
+    return <Loader fullPage text="Chargement du profil..." />;
   }
 
   if (error) {
@@ -203,8 +198,9 @@ export default function Profile() {
                 <Button
                   type="submit"
                   disabled={saving}
-                  className="bg-green-600 hover:bg-green-700 focus:ring-green-500"
+                  className="bg-green-600 hover:bg-green-700 focus:ring-green-500 flex items-center"
                 >
+                  {saving && <ButtonSpinner />}
                   {saving ? "Enregistrement..." : "Enregistrer"}
                 </Button>
               </div>
