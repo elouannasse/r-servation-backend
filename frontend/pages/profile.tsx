@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { updateProfile } from "../lib/api";
 import { showToast } from "../components/Toast";
 import { useAuth } from "../context/AuthContext";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
 
 interface FormErrors {
   name?: string;
@@ -77,10 +79,10 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div style={styles.container}>
-        <div style={styles.loader}>
-          <div style={styles.spinner}></div>
-          <p>Chargement du profil...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
+        <div className="text-center p-12 bg-white rounded-lg shadow-md">
+          <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Chargement du profil...</p>
         </div>
       </div>
     );
@@ -88,317 +90,137 @@ export default function Profile() {
 
   if (error) {
     return (
-      <div style={styles.container}>
-        <div style={styles.error}>
-          <h2>Erreur</h2>
-          <p>{error}</p>
-          <button onClick={() => router.push("/")} style={styles.button}>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
+        <div className="text-center p-8 bg-white rounded-lg shadow-md">
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Erreur</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={() => router.push("/")}>
             Retour à l&apos;accueil
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Mon Profil</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
+      <div className="bg-white rounded-lg shadow-md p-8 max-w-xl w-full">
+        <h1 className="text-3xl font-bold mb-8 text-gray-800 text-center">
+          Mon Profil
+        </h1>
 
-        <div style={styles.userInfo}>
-          <div style={styles.avatar}>
+        <div className="flex flex-col gap-6">
+          {/* Avatar */}
+          <div className="w-20 h-20 rounded-full bg-blue-500 text-white flex items-center justify-center text-3xl font-bold mx-auto mb-4">
             {user?.name?.charAt(0).toUpperCase() || "U"}
           </div>
 
           {!editing ? (
             <>
-              <div style={styles.infoGroup}>
-                <label style={styles.label}>Nom</label>
-                <p style={styles.value}>{user?.name || "Non renseigné"}</p>
-              </div>
-
-              <div style={styles.infoGroup}>
-                <label style={styles.label}>Email</label>
-                <p style={styles.value}>{user?.email || "Non renseigné"}</p>
-              </div>
-
-              <div style={styles.infoGroup}>
-                <label style={styles.label}>Rôle</label>
-                <p style={styles.value}>
-                  <span style={styles.badge}>{user?.role || "user"}</span>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Nom
+                </label>
+                <p className="text-lg text-gray-800">
+                  {user?.name || "Non renseigné"}
                 </p>
               </div>
 
-              <button onClick={openEditForm} style={styles.buttonEdit}>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Email
+                </label>
+                <p className="text-lg text-gray-800">
+                  {user?.email || "Non renseigné"}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Rôle
+                </label>
+                <p>
+                  <span className="inline-block px-3 py-1 bg-blue-500 text-white rounded-full text-sm font-medium">
+                    {user?.role || "user"}
+                  </span>
+                </p>
+              </div>
+
+              <button
+                onClick={openEditForm}
+                className="self-center mt-2 px-5 py-2 border-2 border-blue-500 text-blue-500 rounded-md font-medium hover:bg-blue-50 transition-colors cursor-pointer"
+              >
                 ✎ Modifier le profil
               </button>
             </>
           ) : (
-            <form onSubmit={handleEditSubmit} style={styles.form}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Nom</label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => {
-                    setEditName(e.target.value);
-                    if (formErrors.name)
-                      setFormErrors((p) => ({ ...p, name: undefined }));
-                  }}
-                  style={{
-                    ...styles.input,
-                    borderColor: formErrors.name ? "#e74c3c" : "#ddd",
-                  }}
-                  placeholder="Votre nom"
-                />
-                {formErrors.name && (
-                  <span style={styles.fieldError}>{formErrors.name}</span>
-                )}
-              </div>
+            <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
+              <Input
+                label="Nom"
+                type="text"
+                value={editName}
+                onChange={(e) => {
+                  setEditName(e.target.value);
+                  if (formErrors.name)
+                    setFormErrors((p) => ({ ...p, name: undefined }));
+                }}
+                error={formErrors.name}
+                placeholder="Votre nom"
+              />
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Email</label>
-                <input
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => {
-                    setEditEmail(e.target.value);
-                    if (formErrors.email)
-                      setFormErrors((p) => ({ ...p, email: undefined }));
-                  }}
-                  style={{
-                    ...styles.input,
-                    borderColor: formErrors.email ? "#e74c3c" : "#ddd",
-                  }}
-                  placeholder="votre@email.com"
-                />
-                {formErrors.email && (
-                  <span style={styles.fieldError}>{formErrors.email}</span>
-                )}
-              </div>
+              <Input
+                label="Email"
+                type="email"
+                value={editEmail}
+                onChange={(e) => {
+                  setEditEmail(e.target.value);
+                  if (formErrors.email)
+                    setFormErrors((p) => ({ ...p, email: undefined }));
+                }}
+                error={formErrors.email}
+                placeholder="votre@email.com"
+              />
 
-              <div style={styles.infoGroup}>
-                <label style={styles.label}>Rôle</label>
-                <p style={styles.value}>
-                  <span style={styles.badge}>{user?.role || "user"}</span>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Rôle
+                </label>
+                <p>
+                  <span className="inline-block px-3 py-1 bg-blue-500 text-white rounded-full text-sm font-medium">
+                    {user?.role || "user"}
+                  </span>
                 </p>
               </div>
 
-              <div style={styles.formActions}>
-                <button
+              <div className="flex gap-3 justify-end mt-2">
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => setEditing(false)}
-                  style={styles.buttonSecondary}
                 >
                   Annuler
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={saving}
-                  style={{
-                    ...styles.buttonSave,
-                    opacity: saving ? 0.6 : 1,
-                    cursor: saving ? "not-allowed" : "pointer",
-                  }}
+                  className="bg-green-600 hover:bg-green-700 focus:ring-green-500"
                 >
                   {saving ? "Enregistrement..." : "Enregistrer"}
-                </button>
+                </Button>
               </div>
             </form>
           )}
         </div>
 
-        <div style={styles.actions}>
-          <button
-            onClick={() => router.push("/")}
-            style={styles.buttonSecondary}
-          >
+        <div className="flex gap-4 mt-8 justify-center">
+          <Button variant="secondary" onClick={() => router.push("/")}>
             Retour à l&apos;accueil
-          </button>
-          <button onClick={logout} style={styles.buttonDanger}>
+          </Button>
+          <Button variant="danger" onClick={logout}>
             Se déconnecter
-          </button>
+          </Button>
         </div>
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
-    padding: "2rem",
-  },
-  card: {
-    backgroundColor: "white",
-    borderRadius: "8px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    padding: "2rem",
-    maxWidth: "600px",
-    width: "100%",
-  },
-  title: {
-    fontSize: "2rem",
-    marginBottom: "2rem",
-    color: "#333",
-    textAlign: "center",
-  },
-  loader: {
-    textAlign: "center",
-    padding: "3rem",
-    backgroundColor: "white",
-    borderRadius: "8px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-  },
-  spinner: {
-    border: "4px solid #f3f3f3",
-    borderTop: "4px solid #3498db",
-    borderRadius: "50%",
-    width: "40px",
-    height: "40px",
-    animation: "spin 1s linear infinite",
-    margin: "0 auto 1rem",
-  },
-  error: {
-    textAlign: "center",
-    padding: "2rem",
-    backgroundColor: "white",
-    borderRadius: "8px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-  },
-  userInfo: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.5rem",
-  },
-  avatar: {
-    width: "80px",
-    height: "80px",
-    borderRadius: "50%",
-    backgroundColor: "#3498db",
-    color: "white",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "2rem",
-    fontWeight: "bold",
-    margin: "0 auto 1rem",
-  },
-  infoGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.5rem",
-  },
-  label: {
-    fontSize: "0.875rem",
-    fontWeight: "600",
-    color: "#666",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
-  value: {
-    fontSize: "1.125rem",
-    color: "#333",
-    margin: 0,
-  },
-  badge: {
-    display: "inline-block",
-    padding: "0.25rem 0.75rem",
-    backgroundColor: "#3498db",
-    color: "white",
-    borderRadius: "12px",
-    fontSize: "0.875rem",
-    fontWeight: "500",
-  },
-  actions: {
-    display: "flex",
-    gap: "1rem",
-    marginTop: "2rem",
-    justifyContent: "center",
-  },
-  button: {
-    padding: "0.75rem 1.5rem",
-    borderRadius: "4px",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "1rem",
-    fontWeight: "500",
-    backgroundColor: "#3498db",
-    color: "white",
-  },
-  buttonSecondary: {
-    padding: "0.75rem 1.5rem",
-    borderRadius: "4px",
-    border: "1px solid #ddd",
-    cursor: "pointer",
-    fontSize: "1rem",
-    fontWeight: "500",
-    backgroundColor: "white",
-    color: "#333",
-  },
-  buttonDanger: {
-    padding: "0.75rem 1.5rem",
-    borderRadius: "4px",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "1rem",
-    fontWeight: "500",
-    backgroundColor: "#e74c3c",
-    color: "white",
-  },
-  buttonEdit: {
-    padding: "0.6rem 1.25rem",
-    borderRadius: "4px",
-    border: "2px solid #3498db",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-    fontWeight: "500",
-    backgroundColor: "transparent",
-    color: "#3498db",
-    alignSelf: "center",
-    marginTop: "0.5rem",
-  },
-  buttonSave: {
-    padding: "0.75rem 1.5rem",
-    borderRadius: "4px",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "1rem",
-    fontWeight: "500",
-    backgroundColor: "#2ecc71",
-    color: "white",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.25rem",
-  },
-  formGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.4rem",
-  },
-  formActions: {
-    display: "flex",
-    gap: "1rem",
-    justifyContent: "flex-end",
-    marginTop: "0.5rem",
-  },
-  input: {
-    padding: "0.75rem",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-    fontSize: "1rem",
-    outline: "none",
-    transition: "border-color 0.2s",
-  },
-  fieldError: {
-    color: "#e74c3c",
-    fontSize: "0.8rem",
-    marginTop: "0.15rem",
-  },
-};
