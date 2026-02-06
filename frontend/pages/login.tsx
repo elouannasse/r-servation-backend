@@ -1,6 +1,11 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../hooks/useToast";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
+import { ButtonSpinner } from "../components/Loader";
+import ErrorMessage from "../components/ErrorMessage";
 
 export default function Login() {
   const [email, setEmail] = useState<string>("");
@@ -9,6 +14,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuth();
+  const toast = useToast();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,138 +38,60 @@ export default function Login() {
 
       const data = await response.json();
       await login(data.token);
+      toast.success("Connexion réussie !");
       router.push("/profile");
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Une erreur est survenue");
-      }
+      const message =
+        err instanceof Error ? err.message : "Une erreur est survenue";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Connexion</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 md:p-8">
+      <div className="bg-white rounded-lg shadow-md p-5 md:p-8 max-w-md w-full">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-gray-800 text-center">
+          Connexion
+        </h1>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {error && <ErrorMessage message={error} className="mb-4" />}
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={styles.input}
-              placeholder="votre@email.com"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="votre@email.com"
+          />
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Mot de passe</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={styles.input}
-              placeholder="••••••••"
-            />
-          </div>
+          <Input
+            label="Mot de passe"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+          />
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            style={{
-              ...styles.button,
-              opacity: loading ? 0.6 : 1,
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
+            className="w-full mt-2 py-3 flex items-center justify-center"
           >
+            {loading && <ButtonSpinner />}
             {loading ? "Connexion..." : "Se connecter"}
-          </button>
+          </Button>
         </form>
 
-        <p style={styles.footer}>
+        <p className="text-center mt-6 text-gray-500 text-sm">
           Pas encore de compte ? Contactez l&apos;administrateur
         </p>
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
-    padding: "2rem",
-  },
-  card: {
-    backgroundColor: "white",
-    borderRadius: "8px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    padding: "2rem",
-    maxWidth: "400px",
-    width: "100%",
-  },
-  title: {
-    fontSize: "2rem",
-    marginBottom: "2rem",
-    color: "#333",
-    textAlign: "center",
-  },
-  error: {
-    backgroundColor: "#fee",
-    color: "#c33",
-    padding: "0.75rem",
-    borderRadius: "4px",
-    marginBottom: "1rem",
-    textAlign: "center",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.5rem",
-  },
-  formGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.5rem",
-  },
-  label: {
-    fontSize: "0.875rem",
-    fontWeight: "600",
-    color: "#333",
-  },
-  input: {
-    padding: "0.75rem",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-    fontSize: "1rem",
-  },
-  button: {
-    padding: "0.75rem",
-    backgroundColor: "#3498db",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    fontSize: "1rem",
-    fontWeight: "500",
-    cursor: "pointer",
-    marginTop: "0.5rem",
-  },
-  footer: {
-    textAlign: "center",
-    marginTop: "1.5rem",
-    color: "#666",
-    fontSize: "0.875rem",
-  },
-};
