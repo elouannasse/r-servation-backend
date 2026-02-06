@@ -20,6 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     // Vérifier que l'utilisateur existe toujours
     const user = await this.userModel.findById(id);
+    
     if (!user) {
       throw new UnauthorizedException('Utilisateur non trouvé');
     }
