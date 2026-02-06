@@ -86,8 +86,8 @@ export default function Profile() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
-        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md w-full">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 md:p-8">
+        <div className="text-center p-5 md:p-8 bg-white rounded-lg shadow-md max-w-md w-full">
           <ErrorMessage message={error} className="mb-4" />
           <Button onClick={() => router.push("/")}>
             Retour à l&apos;accueil
@@ -98,9 +98,9 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
-      <div className="bg-white rounded-lg shadow-md p-8 max-w-xl w-full">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 md:p-8">
+      <div className="bg-white rounded-lg shadow-md p-5 md:p-8 max-w-xl w-full">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-gray-800 text-center">
           Mon Profil
         </h1>
 
@@ -208,11 +208,19 @@ export default function Profile() {
           )}
         </div>
 
-        <div className="flex gap-4 mt-8 justify-center">
-          <Button variant="secondary" onClick={() => router.push("/")}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 justify-center">
+          <Button
+            variant="secondary"
+            onClick={() => router.push("/")}
+            className="w-full sm:w-auto"
+          >
             Retour à l&apos;accueil
           </Button>
-          <Button variant="danger" onClick={logout}>
+          <Button
+            variant="danger"
+            onClick={logout}
+            className="w-full sm:w-auto"
+          >
             Se déconnecter
           </Button>
         </div>

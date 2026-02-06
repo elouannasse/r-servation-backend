@@ -51,9 +51,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
-      <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 md:p-8">
+      <div className="bg-white rounded-lg shadow-md p-5 md:p-8 max-w-md w-full">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-gray-800 text-center">
           Connexion
         </h1>
 

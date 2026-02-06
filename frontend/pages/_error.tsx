@@ -10,8 +10,8 @@ function ErrorPage({ statusCode }: ErrorProps) {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
-      <div className="text-center bg-white rounded-lg shadow-md p-10 max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 md:p-8">
+      <div className="text-center bg-white rounded-lg shadow-md p-6 md:p-10 max-w-md w-full">
         <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg
             className="w-8 h-8"
@@ -28,7 +28,7 @@ function ErrorPage({ statusCode }: ErrorProps) {
           </svg>
         </div>
 
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
           {statusCode || "Erreur"}
         </h1>
         <p className="text-gray-500 mb-6">
