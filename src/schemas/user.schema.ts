@@ -15,10 +15,10 @@ export class User {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ 
-    type: String, 
-    enum: UserRole, 
-    default: UserRole.PARTICIPANT 
+  @Prop({
+    type: String,
+    enum: UserRole,
+    default: UserRole.PARTICIPANT,
   })
   role: UserRole;
 

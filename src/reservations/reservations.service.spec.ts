@@ -3,22 +3,21 @@ import { getModelToken } from '@nestjs/mongoose';
 import { ReservationsService } from './reservations.service';
 import { Reservation } from '../schemas/reservation.schema';
 import { Event } from '../schemas/event.schema';
-import { ReservationStatus } from '../enums/reservation-status.enum';
 import { EventStatus } from '../enums/event-status.enum';
-import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 
 describe('ReservationsService', () => {
   let service: ReservationsService;
-  let reservationModel: any;
-  let eventModel: any;
-
-  const mockReservation = {
-    _id: 'resId',
-    event: 'eventId',
-    user: 'userId',
-    status: ReservationStatus.PENDING,
-    save: jest.fn(),
+  let reservationModel: {
+    find: jest.Mock;
+    findOne: jest.Mock;
+    findById: jest.Mock;
+    countDocuments: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
+    exec: jest.Mock;
+    db: { startSession: jest.Mock };
   };
+  let eventModel: { findById: jest.Mock };
 
   const mockReservationModel = {
     find: jest.fn(),
@@ -31,7 +30,9 @@ describe('ReservationsService', () => {
     exec: jest.fn(),
     db: {
       startSession: jest.fn().mockResolvedValue({
-        withTransaction: jest.fn().mockImplementation((fn) => fn()),
+        withTransaction: jest
+          .fn()
+          .mockImplementation((fn: () => unknown) => fn()),
         endSession: jest.fn(),
       }),
     },
@@ -66,6 +67,7 @@ describe('ReservationsService', () => {
       eventModel.findById.mockResolvedValue({ _id: 'eventId', capacity: 10 });
       reservationModel.countDocuments.mockResolvedValue(5);
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const result = await (service as any).checkAvailability('eventId');
       expect(result).toBe(true);
     });
@@ -74,6 +76,7 @@ describe('ReservationsService', () => {
       eventModel.findById.mockResolvedValue({ _id: 'eventId', capacity: 10 });
       reservationModel.countDocuments.mockResolvedValue(10);
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const result = await (service as any).checkAvailability('eventId');
       expect(result).toBe(false);
     });
@@ -81,26 +84,36 @@ describe('ReservationsService', () => {
 
   describe('create', () => {
     it('should throw BadRequestException if event is full', async () => {
-      eventModel.findById.mockResolvedValue({ _id: 'eventId', capacity: 10, status: EventStatus.PUBLISHED });
+      eventModel.findById.mockResolvedValue({
+        _id: 'eventId',
+        capacity: 10,
+        status: EventStatus.PUBLISHED,
+      });
       reservationModel.findOne.mockResolvedValue(null); // No existing reservation
-      
+
       // Mock countDocuments to return 10 (full capacity)
       const mockCountQuery = {
         session: jest.fn().mockResolvedValue(10),
       };
       reservationModel.countDocuments.mockReturnValue(mockCountQuery);
 
-      await expect(service.create({ eventId: 'eventId' }, 'userId'))
-        .rejects.toThrow(BadRequestException);
+      await expect(
+        service.create({ eventId: 'eventId' }, 'userId'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw ConflictException if user already has an active reservation', async () => {
-      eventModel.findById.mockResolvedValue({ _id: 'eventId', capacity: 10, status: EventStatus.PUBLISHED });
+      eventModel.findById.mockResolvedValue({
+        _id: 'eventId',
+        capacity: 10,
+        status: EventStatus.PUBLISHED,
+      });
       reservationModel.countDocuments.mockResolvedValue(5); // Available
       reservationModel.findOne.mockResolvedValue({ _id: 'existingResId' }); // Already reserved
 
-      await expect(service.create({ eventId: 'eventId' }, 'userId'))
-        .rejects.toThrow(ConflictException);
+      await expect(
+        service.create({ eventId: 'eventId' }, 'userId'),
+      ).rejects.toThrow(ConflictException);
     });
   });
 });

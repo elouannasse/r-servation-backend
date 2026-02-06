@@ -15,13 +15,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: { id: string; email: string }) {
     const { id } = payload;
 
     // Vérifier que l'utilisateur existe toujours
     const user = await this.userModel.findById(id);
+
     if (!user) {
-      throw new UnauthorizedException("Utilisateur non trouvé");
+      throw new UnauthorizedException('Utilisateur non trouvé');
     }
 
     // Retourner l'utilisateur qui sera attaché à req.user

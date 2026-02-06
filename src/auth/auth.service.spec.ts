@@ -14,7 +14,12 @@ jest.mock('bcrypt', () => ({
 
 describe('AuthService', () => {
   let service: AuthService;
-  let userModel: any;
+  let userModel: {
+    findOne: jest.Mock;
+    new: jest.Mock;
+    constructor: jest.Mock;
+    save: jest.Mock;
+  };
 
   const mockUser = {
     _id: 'userId',
@@ -52,7 +57,7 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
     userModel = module.get(getModelToken(User.name));
-    
+
     // Reset all mocks
     jest.clearAllMocks();
   });

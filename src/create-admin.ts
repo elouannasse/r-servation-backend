@@ -16,7 +16,7 @@ async function createAdmin() {
 
   // Vérifier si l'admin existe déjà
   const existingAdmin = await userModel.findOne({ email });
-  
+
   if (existingAdmin) {
     console.log('Admin user already exists. Updating role to ADMIN...');
     existingAdmin.role = UserRole.ADMIN;
@@ -25,7 +25,7 @@ async function createAdmin() {
   } else {
     // Créer un nouvel admin
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const admin = new userModel({
       email,
       password: hashedPassword,

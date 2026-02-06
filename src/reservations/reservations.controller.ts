@@ -16,6 +16,13 @@ import { UserRole } from '../enums/user-role.enum';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 
+interface UserPayload {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+}
+
 /**
  * Contrôleur pour la gestion des réservations
  * POST /reservations protégé par PARTICIPANT uniquement
@@ -29,7 +36,7 @@ export class ReservationsController {
   // GET /reservations/me - Lister les réservations de l'utilisateur connecté
   @Get('me')
   async findMyReservations(
-    @CurrentUser() user: any,
+    @CurrentUser() user: UserPayload,
     @Query('status') status?: string,
   ) {
     return this.reservationsService.findMyReservations(user.id, status);
@@ -41,26 +48,27 @@ export class ReservationsController {
   @Roles(UserRole.PARTICIPANT)
   async create(
     @Body() createReservationDto: CreateReservationDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: UserPayload,
   ) {
     return this.reservationsService.create(createReservationDto, user.id);
   }
 
   // DELETE /reservations/:id - Annuler une réservation
   @Delete(':id')
-  async cancel(@Param('id') id: string, @CurrentUser() user: any) {
+  async cancel(@Param('id') id: string, @CurrentUser() user: UserPayload) {
     return this.reservationsService.cancel(id, user.id);
   }
 
   // GET /reservations/event/:eventId - Lister les réservations d'un événement
   @Get('event/:eventId')
-  findByEvent(@Param('eventId') eventId: string, @CurrentUser() user: any) {
+  findByEvent(
+    @Param('eventId') eventId: string,
+    @CurrentUser() user: UserPayload,
+  ) {
     return {
       message: `Réservations pour l'événement ${eventId}`,
       userId: user.id,
-      reservations: [
-        { id: 1, eventId, userId: user.id, status: 'confirmed' },
-      ],
+      reservations: [{ id: 1, eventId, userId: user.id, status: 'confirmed' }],
     };
   }
 }

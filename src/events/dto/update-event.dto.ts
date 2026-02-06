@@ -42,7 +42,9 @@ export class UpdateEventDto {
   capacity?: number;
 
   @IsOptional()
-  @IsEnum(EventStatus, { message: 'Le statut doit être DRAFT, PUBLISHED ou CANCELED' })
+  @IsEnum(EventStatus, {
+    message: 'Le statut doit être DRAFT, PUBLISHED ou CANCELED',
+  })
   status?: EventStatus;
 
   @IsOptional()
