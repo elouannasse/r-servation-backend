@@ -1,4 +1,4 @@
-import { TextareaHTMLAttributes, forwardRef } from "react";
+import { TextareaHTMLAttributes, forwardRef } from 'react';
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -6,8 +6,8 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 }
 
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, error, className = "", rows = 4, id, ...rest }, ref) => {
-    const textareaId = id || label?.toLowerCase().replace(/\s+/g, "-");
+  ({ label, error, className = '', rows = 4, id, ...rest }, ref) => {
+    const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-');
 
     return (
       <div className="flex flex-col gap-1">
@@ -25,8 +25,8 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           rows={rows}
           className={`w-full px-3 py-2 border rounded-md text-sm outline-none transition-colors resize-vertical focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
             error
-              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-              : "border-gray-300"
+              ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+              : 'border-gray-300'
           } ${className}`}
           {...rest}
         />
@@ -36,5 +36,5 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   },
 );
 
-Textarea.displayName = "Textarea";
+Textarea.displayName = 'Textarea';
 export default Textarea;

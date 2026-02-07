@@ -1,6 +1,6 @@
-import { NextPageContext } from "next";
-import { useRouter } from "next/router";
-import Button from "../components/ui/Button";
+import { NextPageContext } from 'next';
+import { useRouter } from 'next/router';
+import Button from '../components/ui/Button';
 
 interface ErrorProps {
   statusCode?: number;
@@ -29,7 +29,7 @@ function ErrorPage({ statusCode }: ErrorProps) {
         </div>
 
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-          {statusCode || "Erreur"}
+          {statusCode || 'Erreur'}
         </h1>
         <p className="text-gray-500 mb-6">
           {statusCode === 404
@@ -37,7 +37,7 @@ function ErrorPage({ statusCode }: ErrorProps) {
             : "Une erreur s'est produite."}
         </p>
 
-        <Button onClick={() => router.push("/")} className="px-6 py-3">
+        <Button onClick={() => router.push('/')} className="px-6 py-3">
           Retour à l&apos;accueil
         </Button>
       </div>

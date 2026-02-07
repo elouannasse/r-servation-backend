@@ -1,19 +1,19 @@
 interface LoaderProps {
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
   text?: string;
   fullPage?: boolean;
 }
 
 const sizeClasses = {
-  sm: "h-4 w-4 border-2",
-  md: "h-8 w-8 border-[3px]",
-  lg: "h-12 w-12 border-4",
+  sm: 'h-4 w-4 border-2',
+  md: 'h-8 w-8 border-[3px]',
+  lg: 'h-12 w-12 border-4',
 };
 
 export default function Loader({
-  size = "md",
-  className = "",
+  size = 'md',
+  className = '',
   text,
   fullPage = false,
 }: LoaderProps) {
@@ -42,8 +42,7 @@ export default function Loader({
   );
 }
 
-/** Inline spinner for use inside buttons */
-export function ButtonSpinner({ className = "" }: { className?: string }) {
+export function ButtonSpinner({ className = '' }: { className?: string }) {
   return (
     <div
       className={`animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent mr-2 ${className}`}

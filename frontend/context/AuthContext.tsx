@@ -1,13 +1,14 @@
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
+  useState,
   useCallback,
   ReactNode,
-} from "react";
-import { useRouter } from "next/router";
-import { getCurrentUser } from "../lib/api";
+} from 'react';
+import { useRouter } from 'next/router';
+import { getCurrentUser } from '../lib/api';
+import Cookies from 'js-cookie';
 
 interface User {
   name: string;
@@ -34,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token');
       if (!token) {
         setUser(null);
         setLoading(false);
@@ -43,8 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = await getCurrentUser();
       setUser(userData);
     } catch {
-      localStorage.removeItem("token");
       setUser(null);
+      localStorage.removeItem('token');
+      Cookies.remove('token', { path: '/' });
     } finally {
       setLoading(false);
     }
@@ -56,24 +58,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (token: string) => {
-      localStorage.setItem("token", token);
+      localStorage.setItem('token', token);
+      Cookies.set('token', token, { expires: 7, path: '/' });
       await fetchUser();
     },
     [fetchUser],
   );
 
   const logout = useCallback(() => {
-    // 1. Supprimer le JWT du localStorage
-    localStorage.removeItem("token");
-
-    // 2. Supprimer les cookies liés à l'auth (au cas où)
-    document.cookie = "token=; Max-Age=0; path=/;";
-
-    // 3. Clear le state global
+    localStorage.removeItem('token');
+    Cookies.remove('token', { path: '/' });
     setUser(null);
-
-    // 4. Rediriger vers /login
-    router.push("/login");
+    router.push('/login');
   }, [router]);
 
   const refreshUser = useCallback(async () => {
@@ -100,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }

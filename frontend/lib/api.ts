@@ -1,5 +1,5 @@
 const API_URL: string =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface FetchOptions extends RequestInit {
   headers?: Record<string, string>;
@@ -10,15 +10,15 @@ export async function fetchWithAuth<T>(
   options: FetchOptions = {},
 ): Promise<T> {
   const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     ...options.headers,
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
@@ -40,7 +40,7 @@ interface User {
 }
 
 export async function getCurrentUser(): Promise<User> {
-  return fetchWithAuth<User>("/auth/me");
+  return fetchWithAuth<User>('/auth/me');
 }
 
 export interface UpdateProfileData {
@@ -50,18 +50,32 @@ export interface UpdateProfileData {
 }
 
 export async function updateProfile(data: UpdateProfileData): Promise<User> {
-  return fetchWithAuth<User>("/auth/profile", {
-    method: "PUT",
+  return fetchWithAuth<User>('/auth/profile', {
+    method: 'PUT',
     body: JSON.stringify(data),
   });
 }
 
 // Events
+export interface EventItem {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  capacity: number;
+  status: 'DRAFT' | 'PUBLISHED' | 'CANCELED';
+  imageUrl?: string;
+  createdBy: { name: string; email?: string } | string;
+  remainingSeats: number;
+}
+
 export interface EventsResponse {
-  events: unknown[];
+  events: EventItem[];
   total: number;
   page: number;
-  totalPages: number;
+  totalPages?: number;
+  limit?: number;
 }
 
 export async function getPublicEvents(
@@ -83,7 +97,7 @@ export async function getAdminEvents(
 // Reservations
 export interface Reservation {
   _id: string;
-  event: unknown;
+  event: string | EventItem;
   status: string;
   createdAt: string;
 }
@@ -91,6 +105,13 @@ export interface Reservation {
 export async function getMyReservations(
   status?: string,
 ): Promise<Reservation[]> {
-  const query = status ? `?status=${status}` : "";
+  const query = status ? `?status=${status}` : '';
   return fetchWithAuth<Reservation[]>(`/reservations/me${query}`);
+}
+
+export async function createReservation(eventId: string): Promise<Reservation> {
+  return fetchWithAuth<Reservation>('/reservations', {
+    method: 'POST',
+    body: JSON.stringify({ eventId }),
+  });
 }

@@ -5,7 +5,7 @@ interface ErrorMessageProps {
 
 export default function ErrorMessage({
   message,
-  className = "",
+  className = '',
 }: ErrorMessageProps) {
   if (!message) return null;
 
