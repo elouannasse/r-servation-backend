@@ -57,11 +57,25 @@ export async function updateProfile(data: UpdateProfileData): Promise<User> {
 }
 
 // Events
+export interface EventItem {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  capacity: number;
+  status: "DRAFT" | "PUBLISHED" | "CANCELED";
+  imageUrl?: string;
+  createdBy: { name: string; email?: string } | string;
+  remainingSeats: number;
+}
+
 export interface EventsResponse {
-  events: unknown[];
+  events: EventItem[];
   total: number;
   page: number;
-  totalPages: number;
+  totalPages?: number;
+  limit?: number;
 }
 
 export async function getPublicEvents(

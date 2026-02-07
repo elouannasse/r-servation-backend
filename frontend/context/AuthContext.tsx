@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useRouter } from "next/router";
 import { getCurrentUser } from "../lib/api";
+import Cookies from "js-cookie";
 
 interface User {
   name: string;
@@ -57,22 +58,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (token: string) => {
       localStorage.setItem("token", token);
+      Cookies.set("token", token, { expires: 7, path: "/" });
       await fetchUser();
     },
     [fetchUser],
   );
 
   const logout = useCallback(() => {
-    // 1. Supprimer le JWT du localStorage
     localStorage.removeItem("token");
-
-    // 2. Supprimer les cookies liés à l'auth (au cas où)
-    document.cookie = "token=; Max-Age=0; path=/;";
-
-    // 3. Clear le state global
+    Cookies.remove("token", { path: "/" });
     setUser(null);
-
-    // 4. Rediriger vers /login
     router.push("/login");
   }, [router]);
 
