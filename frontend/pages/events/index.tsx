@@ -1,7 +1,9 @@
 import { GetServerSideProps } from 'next';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useDebounce } from 'use-debounce';
 import { EventItem } from '../../lib/api';
 
 interface EventsPageProps {
@@ -54,6 +56,17 @@ export default function EventsPage({
   totalPages,
   error,
 }: EventsPageProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch] = useDebounce(searchTerm, 300);
+
+  const filteredEvents = useMemo(() => {
+    if (!debouncedSearch.trim()) return events;
+    const term = debouncedSearch.toLowerCase();
+    return events.filter((event) =>
+      event.title.toLowerCase().includes(term),
+    );
+  }, [events, debouncedSearch]);
+
   return (
     <div>
       <div className="mb-8">
@@ -64,6 +77,40 @@ export default function EventsPage({
           {total} événement{total !== 1 ? 's' : ''} disponible
           {total !== 1 ? 's' : ''}
         </p>
+      </div>
+
+      {/* Search bar */}
+      <div className="relative mb-6">
+        <svg
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Rechercher un événement..."
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {error && (
@@ -94,9 +141,35 @@ export default function EventsPage({
         </div>
       )}
 
-      {events.length > 0 && (
+      {/* No search results */}
+      {!error && events.length > 0 && filteredEvents.length === 0 && (
+        <div className="text-center py-12">
+          <svg
+            className="w-12 h-12 text-gray-300 mx-auto mb-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <p className="text-gray-500">Aucun événement trouvé pour &quot;{debouncedSearch}&quot;</p>
+          <button
+            onClick={() => setSearchTerm('')}
+            className="text-blue-600 hover:underline text-sm mt-2 cursor-pointer"
+          >
+            Effacer la recherche
+          </button>
+        </div>
+      )}
+
+      {filteredEvents.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
         </div>
