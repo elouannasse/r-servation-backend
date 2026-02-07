@@ -1,5 +1,5 @@
 const API_URL: string =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 interface FetchOptions extends RequestInit {
   headers?: Record<string, string>;
@@ -10,15 +10,15 @@ export async function fetchWithAuth<T>(
   options: FetchOptions = {},
 ): Promise<T> {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...options.headers,
   };
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
@@ -40,18 +40,17 @@ interface User {
 }
 
 export async function getCurrentUser(): Promise<User> {
-  return fetchWithAuth<User>('/auth/me');
+  return fetchWithAuth<User>("/auth/me");
 }
 
 export interface UpdateProfileData {
   name: string;
-
   email: string;
 }
 
 export async function updateProfile(data: UpdateProfileData): Promise<User> {
-  return fetchWithAuth<User>('/auth/profile', {
-    method: 'PUT',
+  return fetchWithAuth<User>("/auth/profile", {
+    method: "PUT",
     body: JSON.stringify(data),
   });
 }
@@ -64,7 +63,7 @@ export interface EventItem {
   date: string;
   location: string;
   capacity: number;
-  status: 'DRAFT' | 'PUBLISHED' | 'CANCELED';
+  status: "DRAFT" | "PUBLISHED" | "CANCELED";
   imageUrl?: string;
   createdBy: { name: string; email?: string } | string;
   remainingSeats: number;
@@ -105,26 +104,26 @@ export interface Reservation {
 export async function getMyReservations(
   status?: string,
 ): Promise<Reservation[]> {
-  const query = status ? `?status=${status}` : '';
+  const query = status ? `?status=${status}` : "";
   return fetchWithAuth<Reservation[]>(`/reservations/me${query}`);
 }
 
 export async function createReservation(eventId: string): Promise<Reservation> {
-  return fetchWithAuth<Reservation>('/reservations', {
-    method: 'POST',
+  return fetchWithAuth<Reservation>("/reservations", {
+    method: "POST",
     body: JSON.stringify({ eventId }),
   });
 }
 
 export async function cancelReservation(id: string): Promise<Reservation> {
   return fetchWithAuth<Reservation>(`/reservations/${id}/cancel`, {
-    method: 'PATCH',
+    method: "PATCH",
   });
 }
 
 export async function downloadTicket(reservationId: string): Promise<void> {
   const token =
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const response = await fetch(
     `${API_URL}/reservations/${reservationId}/ticket`,
@@ -135,11 +134,11 @@ export async function downloadTicket(reservationId: string): Promise<void> {
     },
   );
 
-  if (!response.ok) throw new Error('Erreur lors du téléchargement du ticket');
+  if (!response.ok) throw new Error("Erreur lors du téléchargement du ticket");
 
   const blob = await response.blob();
   const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = `ticket-${reservationId}.pdf`;
   document.body.appendChild(a);
