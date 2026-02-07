@@ -1,10 +1,12 @@
 import { GetServerSideProps } from 'next';
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { format } from 'date-fns';
+import { format, isWithinInterval, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useDebounce } from 'use-debounce';
 import { EventItem } from '../../lib/api';
+
+type DateFilter = 'all' | 'week' | 'month';
 
 interface EventsPageProps {
   events: EventItem[];
@@ -57,15 +59,32 @@ export default function EventsPage({
   error,
 }: EventsPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [debouncedSearch] = useDebounce(searchTerm, 300);
 
   const filteredEvents = useMemo(() => {
-    if (!debouncedSearch.trim()) return events;
-    const term = debouncedSearch.toLowerCase();
-    return events.filter((event) =>
-      event.title.toLowerCase().includes(term),
-    );
-  }, [events, debouncedSearch]);
+    let result = events;
+
+    // Date filter
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      const days = dateFilter === 'week' ? 7 : 30;
+      result = result.filter((event) => {
+        const eventDate = new Date(event.date);
+        return isWithinInterval(eventDate, { start: now, end: addDays(now, days) });
+      });
+    }
+
+    // Search filter
+    if (debouncedSearch.trim()) {
+      const term = debouncedSearch.toLowerCase();
+      result = result.filter((event) =>
+        event.title.toLowerCase().includes(term),
+      );
+    }
+
+    return result;
+  }, [events, debouncedSearch, dateFilter]);
 
   return (
     <div>
@@ -79,8 +98,9 @@ export default function EventsPage({
         </p>
       </div>
 
-      {/* Search bar */}
-      <div className="relative mb-6">
+      {/* Search bar + filter */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="relative flex-1">
         <svg
           className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
           fill="none"
@@ -112,6 +132,25 @@ export default function EventsPage({
           </button>
         )}
       </div>
+
+      {/* Date filter dropdown */}
+      <select
+        value={dateFilter}
+        onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+        className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white cursor-pointer sm:w-48"
+      >
+        <option value="all">Tous</option>
+        <option value="week">Cette semaine</option>
+        <option value="month">Ce mois</option>
+      </select>
+      </div>
+
+      {/* Filtered count */}
+      {(debouncedSearch.trim() || dateFilter !== 'all') && filteredEvents.length > 0 && (
+        <p className="text-sm text-gray-500 mb-4">
+          {filteredEvents.length} événement{filteredEvents.length !== 1 ? 's' : ''} trouvé{filteredEvents.length !== 1 ? 's' : ''}
+        </p>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md mb-6 text-sm">
