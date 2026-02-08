@@ -12,7 +12,17 @@ describe('ReservationsService', () => {
   // Mock class/constructor for ReservationModel
   const MockReservationModel = jest.fn().mockImplementation((data) => ({
     save: jest.fn().mockResolvedValue({ _id: 'newReservationId', ...data }), // Mock save for instances
-  }));
+  })) as unknown as {
+    new(data: any): any;
+    find: jest.Mock;
+    findOne: jest.Mock;
+    findById: jest.Mock;
+    countDocuments: jest.Mock;
+    findByIdAndUpdate: jest.Mock;
+    populate: jest.Mock;
+    exec: jest.Mock;
+    sort: jest.Mock;
+  };
 
   // Assign static methods to the MockReservationModel (constructor)
   Object.assign(MockReservationModel, {
@@ -30,8 +40,8 @@ describe('ReservationsService', () => {
   class MockEventModel {
     constructor(private data: any) {}
     save = jest.fn().mockResolvedValue(this.data);
-    static findById = jest.fn().mockReturnThis();
-    static exec = jest.fn(); // exec will resolve the promise with the mocked data
+    static findById: jest.Mock = jest.fn().mockReturnThis();
+    static exec: jest.Mock = jest.fn(); // exec will resolve the promise with the mocked data
   }
 
   beforeEach(async () => {
