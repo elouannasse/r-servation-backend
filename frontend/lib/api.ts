@@ -93,6 +93,44 @@ export async function getAdminEvents(
   );
 }
 
+export async function getAdminEvent(id: string): Promise<EventItem> {
+  return fetchWithAuth<EventItem>(`/events/admin/${id}`);
+}
+
+export interface CreateEventData {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  capacity: number;
+  imageUrl?: string;
+}
+
+export async function createEvent(
+  data: CreateEventData,
+): Promise<{ message: string; event: EventItem }> {
+  return fetchWithAuth("/events", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateEvent(
+  id: string,
+  data: Partial<CreateEventData> & { status?: string },
+): Promise<{ message: string; event: EventItem }> {
+  return fetchWithAuth(`/events/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteEvent(id: string): Promise<{ message: string }> {
+  return fetchWithAuth(`/events/${id}`, {
+    method: "DELETE",
+  });
+}
+
 // Reservations
 export interface Reservation {
   _id: string;
@@ -106,6 +144,25 @@ export async function getMyReservations(
 ): Promise<Reservation[]> {
   const query = status ? `?status=${status}` : "";
   return fetchWithAuth<Reservation[]>(`/reservations/me${query}`);
+}
+
+export async function getAdminReservations(
+  status?: string,
+): Promise<Reservation[]> {
+  const query = status ? `?status=${status}` : "";
+  return fetchWithAuth<Reservation[]>(`/reservations/admin${query}`);
+}
+
+export async function approveReservation(id: string): Promise<{ message: string }> {
+  return fetchWithAuth(`/reservations/${id}/approve`, {
+    method: 'PATCH',
+  });
+}
+
+export async function rejectReservation(id: string): Promise<{ message: string }> {
+  return fetchWithAuth(`/reservations/${id}/reject`, {
+    method: 'PATCH',
+  });
 }
 
 export async function createReservation(eventId: string): Promise<Reservation> {

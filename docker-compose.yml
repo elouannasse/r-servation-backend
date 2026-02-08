@@ -1,0 +1,32 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: mongodb://admin:password123@mongo:27017/events?authSource=admin
+      JWT_SECRET: your_secret_key_here
+    depends_on:
+      - mongo
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
