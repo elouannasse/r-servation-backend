@@ -312,13 +312,13 @@ export class EventsService {
       throw new NotFoundException(`Événement avec l'ID ${eventId} non trouvé`);
     }
 
-    // 2. Compte les réservations avec status = CONFIRMED
-    const confirmedCount = await this.reservationModel.countDocuments({
+    // 2. Compte les réservations actives (PENDING + CONFIRMED)
+    const activeCount = await this.reservationModel.countDocuments({
       event: eventId,
-      status: ReservationStatus.CONFIRMED,
+      status: { $in: [ReservationStatus.PENDING, ReservationStatus.CONFIRMED] },
     });
 
-    // 3. Retourne capacity - confirmedCount
-    return event.capacity - confirmedCount;
+    // 3. Retourne capacity - activeCount
+    return event.capacity - activeCount;
   }
 }

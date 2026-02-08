@@ -45,7 +45,6 @@ export async function getCurrentUser(): Promise<User> {
 
 export interface UpdateProfileData {
   name: string;
-
   email: string;
 }
 
@@ -94,10 +93,48 @@ export async function getAdminEvents(
   );
 }
 
+export async function getAdminEvent(id: string): Promise<EventItem> {
+  return fetchWithAuth<EventItem>(`/events/admin/${id}`);
+}
+
+export interface CreateEventData {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  capacity: number;
+  imageUrl?: string;
+}
+
+export async function createEvent(
+  data: CreateEventData,
+): Promise<{ message: string; event: EventItem }> {
+  return fetchWithAuth("/events", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateEvent(
+  id: string,
+  data: Partial<CreateEventData> & { status?: string },
+): Promise<{ message: string; event: EventItem }> {
+  return fetchWithAuth(`/events/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteEvent(id: string): Promise<{ message: string }> {
+  return fetchWithAuth(`/events/${id}`, {
+    method: "DELETE",
+  });
+}
+
 // Reservations
 export interface Reservation {
   _id: string;
-  event: unknown;
+  event: string | EventItem;
   status: string;
   createdAt: string;
 }
@@ -107,4 +144,62 @@ export async function getMyReservations(
 ): Promise<Reservation[]> {
   const query = status ? `?status=${status}` : "";
   return fetchWithAuth<Reservation[]>(`/reservations/me${query}`);
+}
+
+export async function getAdminReservations(
+  status?: string,
+): Promise<Reservation[]> {
+  const query = status ? `?status=${status}` : "";
+  return fetchWithAuth<Reservation[]>(`/reservations/admin${query}`);
+}
+
+export async function approveReservation(id: string): Promise<{ message: string }> {
+  return fetchWithAuth(`/reservations/${id}/approve`, {
+    method: 'PATCH',
+  });
+}
+
+export async function rejectReservation(id: string): Promise<{ message: string }> {
+  return fetchWithAuth(`/reservations/${id}/reject`, {
+    method: 'PATCH',
+  });
+}
+
+export async function createReservation(eventId: string): Promise<Reservation> {
+  return fetchWithAuth<Reservation>("/reservations", {
+    method: "POST",
+    body: JSON.stringify({ eventId }),
+  });
+}
+
+export async function cancelReservation(id: string): Promise<Reservation> {
+  return fetchWithAuth<Reservation>(`/reservations/${id}/cancel`, {
+    method: "PATCH",
+  });
+}
+
+export async function downloadTicket(reservationId: string): Promise<void> {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const response = await fetch(
+    `${API_URL}/reservations/${reservationId}/ticket`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!response.ok) throw new Error("Erreur lors du téléchargement du ticket");
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ticket-${reservationId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
 }

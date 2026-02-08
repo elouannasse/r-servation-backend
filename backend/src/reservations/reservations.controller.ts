@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Delete,
+  Patch,
   Body,
   Param,
   UseGuards,
@@ -33,6 +34,14 @@ interface UserPayload {
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}
 
+  // GET /reservations/admin - Lister toutes les réservations (ADMIN)
+  @Get('admin')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async findAll(@Query('status') status?: string) {
+    return this.reservationsService.findAll(status);
+  }
+
   // GET /reservations/me - Lister les réservations de l'utilisateur connecté
   @Get('me')
   async findMyReservations(
@@ -40,23 +49,6 @@ export class ReservationsController {
     @Query('status') status?: string,
   ) {
     return this.reservationsService.findMyReservations(user.id, status);
-  }
-
-  // POST /reservations - Créer une nouvelle réservation (PARTICIPANT seulement)
-  @Post()
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.PARTICIPANT)
-  async create(
-    @Body() createReservationDto: CreateReservationDto,
-    @CurrentUser() user: UserPayload,
-  ) {
-    return this.reservationsService.create(createReservationDto, user.id);
-  }
-
-  // DELETE /reservations/:id - Annuler une réservation
-  @Delete(':id')
-  async cancel(@Param('id') id: string, @CurrentUser() user: UserPayload) {
-    return this.reservationsService.cancel(id, user.id);
   }
 
   // GET /reservations/event/:eventId - Lister les réservations d'un événement
@@ -70,5 +62,52 @@ export class ReservationsController {
       userId: user.id,
       reservations: [{ id: 1, eventId, userId: user.id, status: 'confirmed' }],
     };
+  }
+
+  // POST /reservations - Créer une nouvelle réservation (tout utilisateur connecté)
+  @Post()
+  async create(
+    @Body() createReservationDto: CreateReservationDto,
+    @CurrentUser() user: UserPayload,
+  ) {
+    console.log(
+      'Creating reservation for user:',
+      user.id,
+      'Event:',
+      createReservationDto.eventId,
+    );
+    try {
+      const result = await this.reservationsService.create(
+        createReservationDto,
+        user.id,
+      );
+      console.log('Reservation created successfully');
+      return result;
+    } catch (error) {
+      console.error('Error in controller:', error.message);
+      throw error;
+    }
+  }
+
+  // PATCH /reservations/:id/approve - Approuver une réservation (ADMIN)
+  @Patch(':id/approve')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async approve(@Param('id') id: string) {
+    return this.reservationsService.approve(id);
+  }
+
+  // PATCH /reservations/:id/reject - Refuser une réservation (ADMIN)
+  @Patch(':id/reject')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async reject(@Param('id') id: string) {
+    return this.reservationsService.reject(id);
+  }
+
+  // DELETE /reservations/:id - Annuler une réservation
+  @Delete(':id')
+  async cancel(@Param('id') id: string, @CurrentUser() user: UserPayload) {
+    return this.reservationsService.cancel(id, user.id);
   }
 }
