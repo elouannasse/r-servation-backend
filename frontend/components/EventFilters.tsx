@@ -53,7 +53,16 @@ export default function EventFilters({ onFilterChange, events }: any) {
     });
 
     onFilterChange(filtered);
-  }, [events, search, status, location, dateStart, dateEnd, sortBy, onFilterChange]);
+  }, [
+    events,
+    search,
+    status,
+    location,
+    dateStart,
+    dateEnd,
+    sortBy,
+    onFilterChange,
+  ]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
