@@ -83,8 +83,8 @@ export class ReservationsController {
       );
       console.log('Reservation created successfully');
       return result;
-    } catch (error) {
-      console.error('Error in controller:', error.message);
+    } catch (error: unknown) {
+      console.error('Error in controller:', error instanceof Error ? error.message : String(error));
       throw error;
     }
   }

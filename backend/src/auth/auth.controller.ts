@@ -6,13 +6,19 @@ import {
   Put,
   UseGuards,
   ValidationPipe,
-  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+
+interface UserPayload {
+  id: string;
+  email: string;
+  role: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -30,16 +36,16 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getMe(@Request() req: any) {
-    return this.authService.getMe(req.user.id);
+  async getMe(@CurrentUser() user: UserPayload) {
+    return this.authService.getMe(user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('profile')
   async updateProfile(
-    @Request() req: any,
+    @CurrentUser() user: UserPayload,
     @Body(ValidationPipe) updateProfileDto: UpdateProfileDto,
   ) {
-    return this.authService.updateProfile(req.user.id, updateProfileDto);
+    return this.authService.updateProfile(user.id, updateProfileDto);
   }
 }
