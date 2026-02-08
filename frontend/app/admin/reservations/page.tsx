@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, Clock, User, Calendar } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
@@ -11,11 +11,7 @@ export default function AdminReservationsPage() {
   const [filter, setFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchReservations();
-  }, [filter]);
-
-  const fetchReservations = async () => {
+  const fetchReservations = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const url = filter === 'all' 
@@ -38,7 +34,11 @@ export default function AdminReservationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    fetchReservations();
+  }, [fetchReservations]);
 
   const handleApprove = async (id: string) => {
     try {
