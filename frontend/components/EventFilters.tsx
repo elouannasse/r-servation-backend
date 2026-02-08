@@ -18,7 +18,8 @@ export default function EventFilters({ onFilterChange, events }: any) {
       applyFilters();
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, status, location, dateStart, dateEnd, sortBy]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, status, location, dateStart, dateEnd, sortBy, applyFilters]);
 
   const applyFilters = () => {
     let filtered = [...events];

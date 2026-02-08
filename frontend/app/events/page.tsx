@@ -23,7 +23,8 @@ export default function EventsPage() {
     }
     fetchUser();
     fetchEvents();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]);
 
   const fetchUser = async () => {
     try {
