@@ -85,4 +85,71 @@ export class AuthService {
       },
     };
   }
+
+  async getMe(userId: string) {
+    const user = await this.userModel.findById(userId).select('-password');
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur non trouvé');
+    }
+    return {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      createdAt: user.createdAt,
+    };
+  }
+
+  async updateProfile(
+    userId: string,
+    updateData: {
+      name: string;
+      email: string;
+      currentPassword?: string;
+      newPassword?: string;
+    },
+  ) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur non trouvé');
+    }
+
+    // Vérifier si l'email est déjà pris par un autre utilisateur
+    if (updateData.email !== user.email) {
+      const existingUser = await this.userModel.findOne({
+        email: updateData.email,
+      });
+      if (existingUser) {
+        throw new ConflictException('Cet email est déjà utilisé');
+      }
+    }
+
+    // Mettre à jour nom et email
+    user.name = updateData.name;
+    user.email = updateData.email;
+
+    // Changer le mot de passe si demandé
+    if (updateData.currentPassword && updateData.newPassword) {
+      const isPasswordValid = await bcrypt.compare(
+        updateData.currentPassword,
+        user.password,
+      );
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Mot de passe actuel incorrect');
+      }
+      user.password = await bcrypt.hash(updateData.newPassword, 10);
+    }
+
+    await user.save();
+
+    return {
+      message: 'Profil mis à jour avec succès',
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
+  }
 }

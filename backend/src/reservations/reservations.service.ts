@@ -45,23 +45,95 @@ export class ReservationsService {
     return reservations;
   }
 
+  async findAll(status?: string) {
+    const filter: Record<string, unknown> = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    const reservations = await this.reservationModel
+      .find(filter)
+      .populate('event', 'title date location')
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return reservations;
+  }
+
+  async approve(id: string) {
+    const reservation = await this.reservationModel.findById(id);
+    if (!reservation) {
+      throw new NotFoundException(`Réservation avec l'ID ${id} non trouvée`);
+    }
+
+    if (reservation.status !== ReservationStatus.PENDING) {
+      throw new BadRequestException(
+        'Seules les réservations en attente peuvent être approuvées',
+      );
+    }
+
+    // Vérifier la capacité
+    const event = await this.eventModel.findById(reservation.event);
+    if (!event) {
+      throw new NotFoundException('Événement non trouvé');
+    }
+    const confirmedCount = await this.reservationModel.countDocuments({
+      event: reservation.event,
+      status: ReservationStatus.CONFIRMED,
+    });
+
+    if (confirmedCount >= event.capacity) {
+      throw new BadRequestException('Événement complet');
+    }
+
+    reservation.status = ReservationStatus.CONFIRMED;
+    await reservation.save();
+
+    return { message: 'Réservation approuvée', reservation };
+  }
+
+  async reject(id: string) {
+    const reservation = await this.reservationModel.findById(id);
+    if (!reservation) {
+      throw new NotFoundException(`Réservation avec l'ID ${id} non trouvée`);
+    }
+
+    if (reservation.status !== ReservationStatus.PENDING) {
+      throw new BadRequestException(
+        'Seules les réservations en attente peuvent être refusées',
+      );
+    }
+
+    reservation.status = ReservationStatus.REFUSED;
+    await reservation.save();
+
+    return { message: 'Réservation refusée', reservation };
+  }
+
   async create(createReservationDto: CreateReservationDto, userId: string) {
     const { eventId } = createReservationDto;
+
+    console.log('Creating reservation:', { eventId, userId });
 
     // 1. Vérifie que l'événement existe
     const event = await this.eventModel.findById(eventId);
     if (!event) {
+      console.error('Event not found:', eventId);
       throw new NotFoundException(`Événement avec l'ID ${eventId} non trouvé`);
     }
 
+    console.log('Event found:', event.title, 'Status:', event.status);
+
     // 2. Vérifie que status = PUBLISHED
     if (event.status !== EventStatus.PUBLISHED) {
+      console.error('Event not published:', event.status);
       throw new BadRequestException(
         "Impossible de réserver : l'événement n'est pas publié",
       );
     }
 
-    // 4. Vérifie qu'il n'a pas déjà une réservation active (status != CANCELED, REFUSED)
+    // 3. Vérifie qu'il n'a pas déjà une réservation active
     const existingReservation = await this.reservationModel.findOne({
       event: eventId,
       user: userId,
@@ -71,51 +143,47 @@ export class ReservationsService {
     });
 
     if (existingReservation) {
+      console.error('Existing reservation found:', existingReservation._id);
       throw new ConflictException(
         'Vous avez déjà une réservation active pour cet événement',
       );
     }
 
-    // 3. Vérifie atomiquement la disponibilité et crée la réservation
-    // Utilise une transaction pour éviter les conditions de course
-    const session = await this.reservationModel.db.startSession();
+    // 4. Vérifie la disponibilité (PENDING + CONFIRMED comptent comme places prises)
+    const activeCount = await this.reservationModel.countDocuments({
+      event: eventId,
+      status: { $in: [ReservationStatus.PENDING, ReservationStatus.CONFIRMED] },
+    });
 
-    try {
-      return await session.withTransaction(async () => {
-        // Recompte les réservations confirmées dans la transaction
-        const confirmedCount = await this.reservationModel
-          .countDocuments({
-            event: eventId,
-            status: ReservationStatus.CONFIRMED,
-          })
-          .session(session);
+    console.log(
+      'Active reservations (pending+confirmed):',
+      activeCount,
+      'Capacity:',
+      event.capacity,
+    );
 
-        if (confirmedCount >= event.capacity) {
-          throw new BadRequestException('Event is full');
-        }
-
-        // Crée la réservation avec status = PENDING
-        const newReservation = new this.reservationModel({
-          event: eventId,
-          user: userId,
-          status: ReservationStatus.PENDING,
-        });
-
-        const savedReservation = await newReservation.save({ session });
-
-        // Populate pour retourner les détails
-        const populatedReservation = await this.reservationModel
-          .findById(savedReservation._id)
-          .populate('event', 'title date location')
-          .populate('user', 'name email')
-          .session(session)
-          .exec();
-
-        return populatedReservation;
-      });
-    } finally {
-      await session.endSession();
+    if (activeCount >= event.capacity) {
+      throw new BadRequestException('Événement complet');
     }
+
+    // 5. Crée la réservation avec status = PENDING
+    const newReservation = new this.reservationModel({
+      event: eventId,
+      user: userId,
+      status: ReservationStatus.PENDING,
+    });
+
+    const savedReservation = await newReservation.save();
+    console.log('Reservation created:', savedReservation._id);
+
+    // 6. Populate pour retourner les détails
+    const populatedReservation = await this.reservationModel
+      .findById(savedReservation._id)
+      .populate('event', 'title date location')
+      .populate('user', 'name email')
+      .exec();
+
+    return populatedReservation;
   }
 
   async cancel(id: string, userId: string) {
@@ -151,13 +219,13 @@ export class ReservationsService {
       return false;
     }
 
-    // 2. Compte les réservations avec status = CONFIRMED
-    const confirmedCount = await this.reservationModel.countDocuments({
+    // 2. Compte les réservations actives (PENDING + CONFIRMED)
+    const activeCount = await this.reservationModel.countDocuments({
       event: eventId,
-      status: ReservationStatus.CONFIRMED,
+      status: { $in: [ReservationStatus.PENDING, ReservationStatus.CONFIRMED] },
     });
 
-    // 3. Return confirmedCount < event.capacity
-    return confirmedCount < event.capacity;
+    // 3. Return activeCount < event.capacity
+    return activeCount < event.capacity;
   }
 }
