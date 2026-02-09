@@ -54,7 +54,7 @@ interface RequestWithUser extends Request {
     });
 
     await app.init();
-  });
+  }, 60000);
 
   afterAll(async () => {
     if (app) {

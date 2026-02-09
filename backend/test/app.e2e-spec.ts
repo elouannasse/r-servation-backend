@@ -13,7 +13,7 @@ describe('AppController (e2e)', () => {
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
     process.env.DATABASE_URL = mongod.getUri();
-  });
+  }, 60000);
 
   afterAll(async () => {
     if (mongod) await mongod.stop();
@@ -26,7 +26,7 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
-  });
+  }, 60000);
 
   afterEach(async () => {
     if (app) {
