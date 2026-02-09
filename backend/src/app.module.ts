@@ -9,9 +9,12 @@ import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      process.env.DATABASE_URL || 'mongodb://localhost:27017/reservation',
-    ),
+    MongooseModule.forRootAsync({
+      useFactory: () => ({
+        uri:
+          process.env.DATABASE_URL || 'mongodb://localhost:27017/reservation',
+      }),
+    }),
     AuthModule,
     EventsModule,
     ReservationsModule,
