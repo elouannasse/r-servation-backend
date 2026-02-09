@@ -1,0 +1,12 @@
+
+> réservation@0.0.1 lint
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+
+
+C:\Users\Youcode\Desktop\réservation\backend\src\reservations\reservations.service.spec.ts
+   21:58  warning  Unsafe argument of type `any` assigned to a parameter of type `((value: any) => any) | null | undefined`  @typescript-eslint/no-unsafe-argument
+   88:13  error    Unsafe assignment of an `any` value                                                                       @typescript-eslint/no-unsafe-assignment
+  103:13  error    Unsafe assignment of an `any` value                                                                       @typescript-eslint/no-unsafe-assignment
+
+✖ 3 problems (2 errors, 1 warning)
+
