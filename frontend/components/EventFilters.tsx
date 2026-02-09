@@ -10,6 +10,7 @@ export default function EventFilters({ onFilterChange, events }: any) {
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
   const [sortBy, setSortBy] = useState("date");
+  
 
   const locations = [...new Set(events.map((e: any) => e.location))];
 
