@@ -6,6 +6,7 @@ import { AppModule } from './../src/app.module';
 import mongoose from 'mongoose';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../src/auth/guards/roles.guard';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 interface UserPayload {
   id: string;
@@ -17,10 +18,13 @@ interface RequestWithUser extends Request {
   user: UserPayload;
 }
 
-describe('Validation (e2e)', () => {
   let app: INestApplication;
+  let mongod: MongoMemoryServer;
 
   beforeAll(async () => {
+    mongod = await MongoMemoryServer.create();
+    process.env.DATABASE_URL = mongod.getUri();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -56,9 +60,8 @@ describe('Validation (e2e)', () => {
     if (app) {
       await app.close();
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.disconnect();
+    if (mongod) {
+      await mongod.stop();
     }
   });
 
@@ -110,4 +113,3 @@ describe('Validation (e2e)', () => {
       expect(res.body.message).toContain('Le nom est requis');
     });
   });
-});

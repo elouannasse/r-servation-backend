@@ -1,0 +1,56 @@
+
+> réservation@0.0.1 test:e2e
+> jest --config ./test/jest-e2e.json
+
+FAIL test/validation.e2e-spec.ts
+  ● Test suite failed to run
+
+    [96mtest/validation.e2e-spec.ts[0m:[93m116[0m:[93m1[0m - [91merror[0m[90m TS1128: [0mDeclaration or statement expected.
+
+    [7m116[0m });
+    [7m   [0m [91m~[0m
+    [96mtest/validation.e2e-spec.ts[0m:[93m116[0m:[93m2[0m - [91merror[0m[90m TS1128: [0mDeclaration or statement expected.
+
+    [7m116[0m });
+    [7m   [0m [91m ~[0m
+
+FAIL test/app.e2e-spec.ts (9.921 s)
+  ● Console
+
+    console.log
+      Downloading MongoDB "8.2.1": 0% (0mb / 778.2mb)[0G
+
+      at MongoBinaryDownload.printDownloadProgress (../node_modules/mongodb-memory-server-core/src/util/MongoBinaryDownload.ts:664:15)
+
+    console.log
+      Downloading MongoDB "8.2.1": 0.3% (2.4mb / 778.2mb)[0G
+
+      at MongoBinaryDownload.printDownloadProgress (../node_modules/mongodb-memory-server-core/src/util/MongoBinaryDownload.ts:664:15)
+
+    console.log
+      Downloading MongoDB "8.2.1": 0.5% (4mb / 778.2mb)[0G
+
+      at MongoBinaryDownload.printDownloadProgress (../node_modules/mongodb-memory-server-core/src/util/MongoBinaryDownload.ts:664:15)
+
+  ● AppController (e2e) › / (GET)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+    [0m [90m 11 |[39m   [36mlet[39m mongod[33m:[39m [33mMongoMemoryServer[39m[33m;[39m
+     [90m 12 |[39m
+    [31m[1m>[22m[39m[90m 13 |[39m   beforeAll([36masync[39m () [33m=>[39m {
+     [90m    |[39m   [31m[1m^[22m[39m
+     [90m 14 |[39m     mongod [33m=[39m [36mawait[39m [33mMongoMemoryServer[39m[33m.[39mcreate()[33m;[39m
+     [90m 15 |[39m     process[33m.[39menv[33m.[39m[33mDATABASE_URL[39m [33m=[39m mongod[33m.[39mgetUri()[33m;[39m
+     [90m 16 |[39m   })[33m;[39m[0m
+
+      at app.e2e-spec.ts:13:3
+      at Object.<anonymous> (app.e2e-spec.ts:8:1)
+
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+Test Suites: 2 failed, 2 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        11.444 s
+Ran all test suites.

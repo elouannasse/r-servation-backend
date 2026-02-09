@@ -1,0 +1,12 @@
+
+> réservation@0.0.1 test:e2e
+> jest --config ./test/jest-e2e.json
+
+PASS test/app.e2e-spec.ts
+PASS test/validation.e2e-spec.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        4.122 s, estimated 8 s
+Ran all test suites.

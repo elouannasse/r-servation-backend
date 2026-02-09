@@ -3,9 +3,21 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
+
+  let mongod: MongoMemoryServer;
+
+  beforeAll(async () => {
+    mongod = await MongoMemoryServer.create();
+    process.env.DATABASE_URL = mongod.getUri();
+  });
+
+  afterAll(async () => {
+    if (mongod) await mongod.stop();
+  });
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
